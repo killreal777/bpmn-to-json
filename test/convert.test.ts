@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
+import { getPresetConfig } from '../src/config.js';
 import { convertBpmnToJson } from '../src/convert.js';
 
 describe('convertBpmnToJson', () => {
@@ -78,6 +79,60 @@ describe('convertBpmnToJson', () => {
     expect(serialized).not.toContain('asyncBefore');
     expect(serialized).not.toContain('asyncAfter');
     expect(serialized).not.toContain('exclusive');
+  });
+
+  it('uses the base preset by default', async () => {
+    const xml = await readFile('docs/bpmn-examples/loan-application-process.bpmn', 'utf8');
+
+    const defaultResult = await convertBpmnToJson(xml);
+    const baseByName = await convertBpmnToJson(xml, { preset: 'base' });
+    const baseByConfig = await convertBpmnToJson(xml, { config: getPresetConfig('base') });
+
+    expect(defaultResult).toEqual(baseByName);
+    expect(defaultResult).toEqual(baseByConfig);
+  });
+
+  it('applies the max preset optimizations', async () => {
+    const xml = await readFile('docs/bpmn-examples/loan-application-process.bpmn', 'utf8');
+    const result = await convertBpmnToJson(xml, { preset: 'max' });
+    const serialized = JSON.stringify(result);
+    const [process] = result.processes as Array<{
+      elements: Array<Record<string, unknown>>;
+      flows: Array<Record<string, unknown>>;
+    }>;
+
+    const saveApplication = process.elements.find((element) => element.id === 'SaveApplication');
+    const callRiskCheck = process.elements.find((element) => element.id === 'CallRiskCheck');
+
+    expect(result).not.toHaveProperty('definitions');
+    expect(result).not.toHaveProperty('collaborations');
+    expect(serialized).not.toContain('"incoming"');
+    expect(serialized).not.toContain('"outgoing"');
+    expect(serialized).not.toContain('bpmn:');
+    expect(saveApplication).toMatchObject({
+      id: 'SaveApplication',
+      type: 'ServiceTask',
+      impl: '${saveApplicationDelegate}'
+    });
+    expect(saveApplication).not.toHaveProperty('execution');
+    expect(callRiskCheck).toMatchObject({
+      id: 'CallRiskCheck',
+      type: 'CallActivity',
+      call: 'risk-check',
+      extensions: {
+        'camunda:In': ['applicationId', 'applicantName->clientId', 'clientId->applicantName', 'amount->loanAmount'],
+        'camunda:Out': ['riskScore']
+      }
+    });
+    expect(callRiskCheck).not.toHaveProperty('calledElement');
+    expect(process.flows).toContainEqual({
+      id: 'Flow_Start_To_Save',
+      type: 'SequenceFlow',
+      from: 'StartLoanApplication',
+      to: 'SaveApplication'
+    });
+    expect(process.flows[0]).not.toHaveProperty('sourceRef');
+    expect(process.flows[0]).not.toHaveProperty('targetRef');
   });
 
   it('projects gateway conditions deterministically', async () => {

@@ -1,5 +1,10 @@
 import { createRequire } from 'node:module';
 import BpmnModdle from 'bpmn-moddle';
+import {
+  type CompressionConfig,
+  type CompressionPresetName,
+  resolveCompressionConfig
+} from './config.js';
 
 const require = createRequire(import.meta.url);
 const camundaModdle = require('camunda-bpmn-moddle/resources/camunda.json') as Record<string, unknown>;
@@ -12,6 +17,11 @@ type ModdleElement = {
 };
 
 type ConversionResult = Record<string, unknown>;
+
+export type ConvertOptions = {
+  preset?: CompressionPresetName;
+  config?: CompressionConfig;
+};
 
 const EXCLUDED_TYPES = new Set([
   'bpmndi:BPMNDiagram',
@@ -57,16 +67,19 @@ const EXECUTION_KEY_MAP = new Map<string, string>([
   ['mapDecisionResult', 'camunda:mapDecisionResult']
 ]);
 
-export async function convertBpmnToJson(xml: string): Promise<ConversionResult> {
+export async function convertBpmnToJson(xml: string, options: ConvertOptions = {}): Promise<ConversionResult> {
+  const config = resolveCompressionConfig(options.config ?? (options.preset ? { extends: options.preset } : undefined));
   const moddle = new BpmnModdle({ camunda: camundaModdle });
   const { rootElement, warnings } = await moddle.fromXML(xml);
   const definitions = rootElement as ModdleElement;
   const rootElements = arrayOf<ModdleElement>(definitions.rootElements);
 
   return cleanValue({
-    definitions: cleanValue({ id: definitions.id }),
-    collaborations: sortItems(rootElements.filter((element) => element.$type === 'bpmn:Collaboration').map(projectCollaboration)),
-    processes: sortItems(rootElements.filter((element) => element.$type === 'bpmn:Process').map(projectProcess)),
+    definitions: config.optimizations?.omitDefinitions ? undefined : cleanValue({ id: definitions.id }),
+    collaborations: isExcludedByConfig('collaborations', config)
+      ? undefined
+      : sortItems(rootElements.filter((element) => element.$type === 'bpmn:Collaboration').map(projectCollaboration)),
+    processes: sortItems(rootElements.filter((element) => element.$type === 'bpmn:Process').map((process) => projectProcess(process, config))),
     warnings: warnings.map((warning: { message?: string }) => cleanValue({ message: warning.message }))
   }) as ConversionResult;
 }
@@ -83,44 +96,52 @@ function projectCollaboration(collaboration: ModdleElement): unknown {
   });
 }
 
-function projectProcess(process: ModdleElement): unknown {
+function projectProcess(process: ModdleElement, config: CompressionConfig): unknown {
   const flowElements = arrayOf<ModdleElement>(process.flowElements).filter((element) => !isExcludedElement(element));
   const sequenceFlows = flowElements.filter((element) => element.$type === 'bpmn:SequenceFlow');
   const elements = flowElements.filter((element) => element.$type !== 'bpmn:SequenceFlow');
 
   return cleanValue({
     id: process.id,
-    type: process.$type,
+    type: projectType(process.$type, config),
     name: process.name,
-    elements: sortItems(elements.map(projectFlowElement)),
-    flows: sortItems(sequenceFlows.map(projectSequenceFlow))
+    elements: sortItems(elements.map((element) => projectFlowElement(element, config))),
+    flows: sortItems(sequenceFlows.map((flow) => projectSequenceFlow(flow, config)))
   });
 }
 
-function projectFlowElement(element: ModdleElement): unknown {
+function projectFlowElement(element: ModdleElement, config: CompressionConfig): unknown {
+  const execution = projectExecution(element);
+  const impl = projectImplementation(element, execution, config);
+
   return cleanValue({
     id: element.id,
-    type: element.$type,
+    type: projectType(element.$type, config),
     name: element.name,
     documentation: projectDocumentation(element.documentation),
-    calledElement: stringValue(element.calledElement),
+    calledElement: config.optimizations?.compactCallActivity ? undefined : stringValue(element.calledElement),
+    call: config.optimizations?.compactCallActivity ? stringValue(element.calledElement) : undefined,
     scriptFormat: stringValue(element.scriptFormat),
     script: projectScript(element.script),
-    execution: projectExecution(element),
-    extensions: projectExtensions(element.extensionElements),
-    incoming: idsOf(element.incoming),
-    outgoing: idsOf(element.outgoing)
+    impl,
+    execution: impl ? undefined : execution,
+    extensions: projectExtensions(element.extensionElements, config),
+    incoming: config.optimizations?.omitIncomingOutgoing ? undefined : idsOf(element.incoming),
+    outgoing: config.optimizations?.omitIncomingOutgoing ? undefined : idsOf(element.outgoing)
   });
 }
 
-function projectSequenceFlow(flow: ModdleElement): unknown {
+function projectSequenceFlow(flow: ModdleElement, config: CompressionConfig): unknown {
+  const refs = config.optimizations?.compactFlowRefs
+    ? { from: idOf(flow.sourceRef), to: idOf(flow.targetRef) }
+    : { sourceRef: idOf(flow.sourceRef), targetRef: idOf(flow.targetRef) };
+
   return cleanValue({
     id: flow.id,
-    type: flow.$type,
+    type: projectType(flow.$type, config),
     name: flow.name,
-    sourceRef: idOf(flow.sourceRef),
-    targetRef: idOf(flow.targetRef),
-    condition: projectExpression(flow.conditionExpression),
+    ...refs,
+    condition: projectExpression(flow.conditionExpression, config),
     execution: projectExecution(flow)
   });
 }
@@ -138,14 +159,14 @@ function projectExecution(element: ModdleElement): unknown {
   return cleanValue(execution);
 }
 
-function projectExtensions(value: unknown): unknown {
+function projectExtensions(value: unknown, config: CompressionConfig): unknown {
   const extensionElements = isRecord(value) ? arrayOf<ModdleElement>(value.values) : [];
   const grouped: Record<string, string[]> = {};
   const fallback: unknown[] = [];
 
   for (const element of extensionElements) {
     const type = element.$type;
-    const compactMapping = compactExtensionMapping(element);
+    const compactMapping = compactExtensionMapping(element, config);
 
     if (type && compactMapping) {
       grouped[type] = [...(grouped[type] ?? []), compactMapping];
@@ -161,7 +182,7 @@ function projectExtensions(value: unknown): unknown {
   });
 }
 
-function compactExtensionMapping(element: ModdleElement): string | undefined {
+function compactExtensionMapping(element: ModdleElement, config: CompressionConfig): string | undefined {
   const source = stringValue(element.source ?? element.sourceExpression);
   const target = stringValue(element.target);
 
@@ -169,7 +190,7 @@ function compactExtensionMapping(element: ModdleElement): string | undefined {
     return undefined;
   }
 
-  return `${source}->${target}`;
+  return config.optimizations?.compactSameNameMappings && source === target ? source : `${source}->${target}`;
 }
 
 function projectExtensionObject(element: ModdleElement): unknown {
@@ -203,9 +224,23 @@ function projectScript(value: unknown): unknown {
   return undefined;
 }
 
-function projectExpression(value: unknown): unknown {
+function projectExpression(value: unknown, config: CompressionConfig): unknown {
   if (!isRecord(value)) {
     return undefined;
+  }
+
+  if (config.optimizations?.compactConditions) {
+    const body = stringValue(value.body);
+    const language = stringValue(value.language);
+
+    if (!language) {
+      return body;
+    }
+
+    return cleanValue({
+      body,
+      lang: language
+    });
   }
 
   return cleanValue({
@@ -213,6 +248,40 @@ function projectExpression(value: unknown): unknown {
     body: stringValue(value.body),
     language: stringValue(value.language)
   });
+}
+
+function projectImplementation(element: ModdleElement, execution: unknown, config: CompressionConfig): string | undefined {
+  if (!config.optimizations?.compactServiceTaskImplementation || !isServiceTaskLike(element) || !isRecord(execution)) {
+    return undefined;
+  }
+
+  const implementationKeys = [
+    'camunda:delegateExpression',
+    'camunda:class',
+    'camunda:expression',
+    'camunda:topic'
+  ];
+  const present = implementationKeys
+    .map((key) => execution[key])
+    .filter((value): value is string => typeof value === 'string' && value !== '');
+
+  return present.length === 1 ? present[0] : undefined;
+}
+
+function projectType(type: unknown, config: CompressionConfig): unknown {
+  if (!config.optimizations?.compactTypes || typeof type !== 'string') {
+    return type;
+  }
+
+  return type.startsWith('bpmn:') ? type.slice('bpmn:'.length) : type;
+}
+
+function isServiceTaskLike(element: ModdleElement): boolean {
+  return element.$type === 'bpmn:ServiceTask' || element.$type === 'bpmn:SendTask' || element.$type === 'bpmn:BusinessRuleTask';
+}
+
+function isExcludedByConfig(path: string, config: CompressionConfig): boolean {
+  return config.fields?.exclude?.includes(path) ?? false;
 }
 
 function projectDocumentation(value: unknown): unknown {
