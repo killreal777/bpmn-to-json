@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_RiskCheck" targetNamespace="http://killreal777.com/loan-process-demo" exporter="Camunda Modeler" exporterVersion="5.46.1">
+  <bpmn:collaboration id="Collaboration_RiskCheck">
+    <bpmn:participant id="Participant_RiskCheck" name="Risk check process" processRef="risk-check-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="risk-check-process" name="Risk check process" isExecutable="true" camunda:historyTimeToLive="30">
+    <bpmn:startEvent id="StartRiskCheck">
+      <bpmn:outgoing>Flow_Start_To_Calculate</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Calculate" sourceRef="StartRiskCheck" targetRef="YetAnotherServiceTask" />
+    <bpmn:serviceTask id="YetAnotherServiceTask" name="Calculate risk" camunda:asyncBefore="true" camunda:delegateExpression="${calculateRiskDelegate}">
+      <bpmn:incoming>Flow_Start_To_Calculate</bpmn:incoming>
+      <bpmn:outgoing>Flow_Calculate_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_Calculate_To_End" sourceRef="YetAnotherServiceTask" targetRef="EndRiskCheck" />
+    <bpmn:endEvent id="EndRiskCheck">
+      <bpmn:incoming>Flow_Calculate_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_RiskCheck">
+    <bpmndi:BPMNPlane id="BPMNPlane_RiskCheck" bpmnElement="Collaboration_RiskCheck">
+      <bpmndi:BPMNShape id="Participant_RiskCheck_di" bpmnElement="Participant_RiskCheck" isHorizontal="true">
+        <dc:Bounds x="132" y="55" width="400" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartRiskCheck_di" bpmnElement="StartRiskCheck">
+        <dc:Bounds x="180" y="140" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CalculateRisk_di" bpmnElement="YetAnotherServiceTask">
+        <dc:Bounds x="270" y="118" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndRiskCheck_di" bpmnElement="EndRiskCheck">
+        <dc:Bounds x="430" y="140" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Calculate_di" bpmnElement="Flow_Start_To_Calculate">
+        <di:waypoint x="216" y="158" />
+        <di:waypoint x="270" y="158" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Calculate_To_End_di" bpmnElement="Flow_Calculate_To_End">
+        <di:waypoint x="370" y="158" />
+        <di:waypoint x="430" y="158" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

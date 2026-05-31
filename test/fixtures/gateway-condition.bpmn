@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_GatewayCondition">
+  <bpmn:process id="Process_GatewayCondition" name="Gateway condition">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_Start_To_Gateway</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Gateway" sourceRef="StartEvent_1" targetRef="Gateway_1" />
+    <bpmn:exclusiveGateway id="Gateway_1" name="Approved?">
+      <bpmn:incoming>Flow_Start_To_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_To_Approve</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_To_Reject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_Gateway_To_Approve" name="approved" sourceRef="Gateway_1" targetRef="Task_Approve">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" language="feel">riskScore &lt; 50</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:task id="Task_Approve" name="Approve">
+      <bpmn:incoming>Flow_Gateway_To_Approve</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approve_To_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_Gateway_To_Reject" name="rejected" sourceRef="Gateway_1" targetRef="Task_Reject">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">riskScore &gt;= 50</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:task id="Task_Reject" name="Reject">
+      <bpmn:incoming>Flow_Gateway_To_Reject</bpmn:incoming>
+      <bpmn:outgoing>Flow_Reject_To_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_Approve_To_End" sourceRef="Task_Approve" targetRef="EndEvent_1" />
+    <bpmn:sequenceFlow id="Flow_Reject_To_End" sourceRef="Task_Reject" targetRef="EndEvent_1" />
+    <bpmn:endEvent id="EndEvent_1">
+      <bpmn:incoming>Flow_Approve_To_End</bpmn:incoming>
+      <bpmn:incoming>Flow_Reject_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_GatewayCondition">
+    <bpmndi:BPMNPlane id="BPMNPlane_GatewayCondition" bpmnElement="Process_GatewayCondition">
+      <bpmndi:BPMNShape id="Gateway_1_di" bpmnElement="Gateway_1">
+        <dc:Bounds x="200" y="100" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Gateway_To_Approve_di" bpmnElement="Flow_Gateway_To_Approve">
+        <di:waypoint x="250" y="125" />
+        <di:waypoint x="320" y="80" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

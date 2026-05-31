@@ -1,0 +1,154 @@
+{
+  "collaborations": [
+    {
+      "id": "Collaboration_LoanApplication",
+      "participants": [
+        {
+          "id": "Participant_LoanApplication",
+          "name": "Loan application process",
+          "processRef": "loan-application-process"
+        }
+      ]
+    }
+  ],
+  "definitions": {
+    "id": "Definitions_LoanApplication"
+  },
+  "processes": [
+    {
+      "elements": [
+        {
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": true,
+            "camunda:delegateExpression": "${publishDecisionDelegate}",
+            "camunda:exclusive": true
+          },
+          "id": "Activity_0jo48pq",
+          "incoming": [
+            "Flow_Risk_To_Publish"
+          ],
+          "name": "Publish decision",
+          "outgoing": [
+            "Flow_Publish_To_End"
+          ],
+          "type": "bpmn:ServiceTask"
+        },
+        {
+          "calledElement": "risk-check",
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": true,
+            "camunda:exclusive": true
+          },
+          "extensions": [
+            {
+              "source": "applicationId",
+              "target": "applicationId",
+              "type": "camunda:In"
+            },
+            {
+              "source": "applicantName",
+              "target": "clientId",
+              "type": "camunda:In"
+            },
+            {
+              "source": "clientId",
+              "target": "applicantName",
+              "type": "camunda:In"
+            },
+            {
+              "source": "amount",
+              "target": "loanAmount",
+              "type": "camunda:In"
+            },
+            {
+              "sourceExpression": "riskScore",
+              "target": "riskScore",
+              "type": "camunda:Out"
+            }
+          ],
+          "id": "CallRiskCheck",
+          "incoming": [
+            "Flow_Save_To_Risk"
+          ],
+          "name": "Run risk check",
+          "outgoing": [
+            "Flow_Risk_To_Publish"
+          ],
+          "type": "bpmn:CallActivity"
+        },
+        {
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": false,
+            "camunda:exclusive": true
+          },
+          "id": "EndLoanApplication",
+          "incoming": [
+            "Flow_Publish_To_End"
+          ],
+          "type": "bpmn:EndEvent"
+        },
+        {
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": true,
+            "camunda:delegateExpression": "${saveApplicationDelegate}",
+            "camunda:exclusive": true
+          },
+          "id": "SaveApplication",
+          "incoming": [
+            "Flow_Start_To_Save"
+          ],
+          "name": "Save application",
+          "outgoing": [
+            "Flow_Save_To_Risk"
+          ],
+          "type": "bpmn:ServiceTask"
+        },
+        {
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": false,
+            "camunda:exclusive": true
+          },
+          "id": "StartLoanApplication",
+          "outgoing": [
+            "Flow_Start_To_Save"
+          ],
+          "type": "bpmn:StartEvent"
+        }
+      ],
+      "flows": [
+        {
+          "id": "Flow_Publish_To_End",
+          "sourceRef": "Activity_0jo48pq",
+          "targetRef": "EndLoanApplication",
+          "type": "bpmn:SequenceFlow"
+        },
+        {
+          "id": "Flow_Risk_To_Publish",
+          "sourceRef": "CallRiskCheck",
+          "targetRef": "Activity_0jo48pq",
+          "type": "bpmn:SequenceFlow"
+        },
+        {
+          "id": "Flow_Save_To_Risk",
+          "sourceRef": "SaveApplication",
+          "targetRef": "CallRiskCheck",
+          "type": "bpmn:SequenceFlow"
+        },
+        {
+          "id": "Flow_Start_To_Save",
+          "sourceRef": "StartLoanApplication",
+          "targetRef": "SaveApplication",
+          "type": "bpmn:SequenceFlow"
+        }
+      ],
+      "id": "loan-application-process",
+      "name": "Loan application process",
+      "type": "bpmn:Process"
+    }
+  ]
+}

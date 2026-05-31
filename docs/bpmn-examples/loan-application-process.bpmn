@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_LoanApplication"
+                  targetNamespace="http://killreal777.com/loan-process-demo">
+  <bpmn:collaboration id="Collaboration_LoanApplication">
+    <bpmn:participant id="Participant_LoanApplication" name="Loan application process" processRef="loan-application-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="loan-application-process" name="Loan application process" isExecutable="true" camunda:historyTimeToLive="30">
+    <bpmn:startEvent id="StartLoanApplication">
+      <bpmn:outgoing>Flow_Start_To_Save</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Save" sourceRef="StartLoanApplication" targetRef="SaveApplication" />
+    <bpmn:serviceTask id="SaveApplication" name="Save application" camunda:asyncBefore="true" camunda:delegateExpression="${saveApplicationDelegate}">
+      <bpmn:incoming>Flow_Start_To_Save</bpmn:incoming>
+      <bpmn:outgoing>Flow_Save_To_Risk</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_Save_To_Risk" sourceRef="SaveApplication" targetRef="CallRiskCheck" />
+    <bpmn:callActivity id="CallRiskCheck" name="Run risk check" camunda:asyncBefore="true" calledElement="risk-check">
+      <bpmn:extensionElements>
+        <camunda:in source="applicationId" target="applicationId" />
+        <camunda:in source="applicantName" target="clientId" />
+        <camunda:in source="clientId" target="applicantName" />
+        <camunda:in source="amount" target="loanAmount" />
+        <camunda:out sourceExpression="riskScore" target="riskScore" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Save_To_Risk</bpmn:incoming>
+      <bpmn:outgoing>Flow_Risk_To_Publish</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_Risk_To_Publish" sourceRef="CallRiskCheck" targetRef="Activity_0jo48pq" />
+    <bpmn:serviceTask id="Activity_0jo48pq" name="Publish decision" camunda:asyncBefore="true" camunda:delegateExpression="${publishDecisionDelegate}">
+      <bpmn:incoming>Flow_Risk_To_Publish</bpmn:incoming>
+      <bpmn:outgoing>Flow_Publish_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_Publish_To_End" sourceRef="Activity_0jo48pq" targetRef="EndLoanApplication" />
+    <bpmn:endEvent id="EndLoanApplication">
+      <bpmn:incoming>Flow_Publish_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_LoanApplication">
+    <bpmndi:BPMNPlane id="BPMNPlane_LoanApplication" bpmnElement="Collaboration_LoanApplication">
+      <bpmndi:BPMNShape id="Participant_LoanApplication_di" bpmnElement="Participant_LoanApplication" isHorizontal="true">
+        <dc:Bounds x="132" y="55" width="698" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartLoanApplication_di" bpmnElement="StartLoanApplication">
+        <dc:Bounds x="180" y="140" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SaveApplication_di" bpmnElement="SaveApplication">
+        <dc:Bounds x="270" y="118" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallRiskCheck_di" bpmnElement="CallRiskCheck">
+        <dc:Bounds x="430" y="118" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0jo48pq_di" bpmnElement="Activity_0jo48pq">
+        <dc:Bounds x="590" y="118" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndLoanApplication_di" bpmnElement="EndLoanApplication">
+        <dc:Bounds x="750" y="140" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Save_di" bpmnElement="Flow_Start_To_Save">
+        <di:waypoint x="216" y="158" />
+        <di:waypoint x="270" y="158" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Save_To_Risk_di" bpmnElement="Flow_Save_To_Risk">
+        <di:waypoint x="370" y="158" />
+        <di:waypoint x="430" y="158" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Risk_To_Publish_di" bpmnElement="Flow_Risk_To_Publish">
+        <di:waypoint x="530" y="158" />
+        <di:waypoint x="590" y="158" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Publish_To_End_di" bpmnElement="Flow_Publish_To_End">
+        <di:waypoint x="690" y="158" />
+        <di:waypoint x="750" y="158" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,81 @@
+{
+  "collaborations": [
+    {
+      "id": "Collaboration_RiskCheck",
+      "participants": [
+        {
+          "id": "Participant_RiskCheck",
+          "name": "Risk check process",
+          "processRef": "risk-check-process"
+        }
+      ]
+    }
+  ],
+  "definitions": {
+    "id": "Definitions_RiskCheck"
+  },
+  "processes": [
+    {
+      "elements": [
+        {
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": false,
+            "camunda:exclusive": true
+          },
+          "id": "EndRiskCheck",
+          "incoming": [
+            "Flow_Calculate_To_End"
+          ],
+          "type": "bpmn:EndEvent"
+        },
+        {
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": false,
+            "camunda:exclusive": true
+          },
+          "id": "StartRiskCheck",
+          "outgoing": [
+            "Flow_Start_To_Calculate"
+          ],
+          "type": "bpmn:StartEvent"
+        },
+        {
+          "execution": {
+            "camunda:asyncAfter": false,
+            "camunda:asyncBefore": true,
+            "camunda:delegateExpression": "${calculateRiskDelegate}",
+            "camunda:exclusive": true
+          },
+          "id": "YetAnotherServiceTask",
+          "incoming": [
+            "Flow_Start_To_Calculate"
+          ],
+          "name": "Calculate risk",
+          "outgoing": [
+            "Flow_Calculate_To_End"
+          ],
+          "type": "bpmn:ServiceTask"
+        }
+      ],
+      "flows": [
+        {
+          "id": "Flow_Calculate_To_End",
+          "sourceRef": "YetAnotherServiceTask",
+          "targetRef": "EndRiskCheck",
+          "type": "bpmn:SequenceFlow"
+        },
+        {
+          "id": "Flow_Start_To_Calculate",
+          "sourceRef": "StartRiskCheck",
+          "targetRef": "YetAnotherServiceTask",
+          "type": "bpmn:SequenceFlow"
+        }
+      ],
+      "id": "risk-check-process",
+      "name": "Risk check process",
+      "type": "bpmn:Process"
+    }
+  ]
+}
