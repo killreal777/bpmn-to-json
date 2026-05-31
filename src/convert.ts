@@ -74,14 +74,16 @@ export async function convertBpmnToJson(xml: string, options: ConvertOptions = {
   const definitions = rootElement as ModdleElement;
   const rootElements = arrayOf<ModdleElement>(definitions.rootElements);
 
-  return cleanValue({
+  const projected = cleanValue({
     definitions: config.optimizations?.omitDefinitions ? undefined : cleanValue({ id: definitions.id }),
     collaborations: isExcludedByConfig('collaborations', config)
       ? undefined
       : sortItems(rootElements.filter((element) => element.$type === 'bpmn:Collaboration').map(projectCollaboration)),
     processes: sortItems(rootElements.filter((element) => element.$type === 'bpmn:Process').map((process) => projectProcess(process, config))),
     warnings: warnings.map((warning: { message?: string }) => cleanValue({ message: warning.message }))
-  }) as ConversionResult;
+  });
+
+  return applyFieldExclusions(projected, config) as ConversionResult;
 }
 
 function projectCollaboration(collaboration: ModdleElement): unknown {
@@ -282,6 +284,50 @@ function isServiceTaskLike(element: ModdleElement): boolean {
 
 function isExcludedByConfig(path: string, config: CompressionConfig): boolean {
   return config.fields?.exclude?.includes(path) ?? false;
+}
+
+function applyFieldExclusions(value: unknown, config: CompressionConfig): unknown {
+  const excludes = config.fields?.exclude ?? [];
+
+  if (excludes.length === 0) {
+    return value;
+  }
+
+  return cleanValue(excludes.reduce((current, path) => removePath(current, path.split('.')), value));
+}
+
+function removePath(value: unknown, path: string[]): unknown {
+  if (path.length === 0) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => removePath(item, path));
+  }
+
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  const [head, ...tail] = path;
+  const next = { ...value };
+
+  if (tail.length === 0) {
+    delete next[head];
+    return next;
+  }
+
+  if (head in next) {
+    next[head] = removePath(next[head], tail);
+  }
+
+  for (const [key, item] of Object.entries(next)) {
+    if (Array.isArray(item)) {
+      next[key] = item.map((child) => removePath(child, path));
+    }
+  }
+
+  return next;
 }
 
 function projectDocumentation(value: unknown): unknown {
