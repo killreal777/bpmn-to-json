@@ -135,6 +135,25 @@ describe('convertBpmnToJson', () => {
     expect(process.flows[0]).not.toHaveProperty('targetRef');
   });
 
+  it('excludes configured fields from the final output', async () => {
+    const xml = await readFile('docs/bpmn-examples/loan-application-process.bpmn', 'utf8');
+    const result = await convertBpmnToJson(xml, {
+      config: {
+        extends: 'base',
+        fields: {
+          exclude: ['definitions', 'collaborations', 'elements.incoming', 'elements.outgoing']
+        }
+      }
+    });
+    const serialized = JSON.stringify(result);
+
+    expect(result).not.toHaveProperty('definitions');
+    expect(result).not.toHaveProperty('collaborations');
+    expect(serialized).not.toContain('"incoming"');
+    expect(serialized).not.toContain('"outgoing"');
+    expect(serialized).toContain('"flows"');
+  });
+
   it('projects gateway conditions deterministically', async () => {
     const xml = await readFile('test/fixtures/gateway-condition.bpmn', 'utf8');
     const first = await convertBpmnToJson(xml);
