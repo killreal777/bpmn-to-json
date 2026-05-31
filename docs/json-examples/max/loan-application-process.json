@@ -1,0 +1,74 @@
+{
+  "processes": [
+    {
+      "elements": [
+        {
+          "id": "Activity_0jo48pq",
+          "impl": "${publishDecisionDelegate}",
+          "name": "Publish decision",
+          "type": "ServiceTask"
+        },
+        {
+          "call": "risk-check",
+          "extensions": {
+            "camunda:In": [
+              "applicationId",
+              "applicantName->clientId",
+              "clientId->applicantName",
+              "amount->loanAmount"
+            ],
+            "camunda:Out": [
+              "riskScore"
+            ]
+          },
+          "id": "CallRiskCheck",
+          "name": "Run risk check",
+          "type": "CallActivity"
+        },
+        {
+          "id": "EndLoanApplication",
+          "type": "EndEvent"
+        },
+        {
+          "id": "SaveApplication",
+          "impl": "${saveApplicationDelegate}",
+          "name": "Save application",
+          "type": "ServiceTask"
+        },
+        {
+          "id": "StartLoanApplication",
+          "type": "StartEvent"
+        }
+      ],
+      "flows": [
+        {
+          "from": "Activity_0jo48pq",
+          "id": "Flow_Publish_To_End",
+          "to": "EndLoanApplication",
+          "type": "SequenceFlow"
+        },
+        {
+          "from": "CallRiskCheck",
+          "id": "Flow_Risk_To_Publish",
+          "to": "Activity_0jo48pq",
+          "type": "SequenceFlow"
+        },
+        {
+          "from": "SaveApplication",
+          "id": "Flow_Save_To_Risk",
+          "to": "CallRiskCheck",
+          "type": "SequenceFlow"
+        },
+        {
+          "from": "StartLoanApplication",
+          "id": "Flow_Start_To_Save",
+          "to": "SaveApplication",
+          "type": "SequenceFlow"
+        }
+      ],
+      "id": "loan-application-process",
+      "name": "Loan application process",
+      "type": "Process"
+    }
+  ]
+}

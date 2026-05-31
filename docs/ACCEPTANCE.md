@@ -14,8 +14,10 @@
 ```bash
 npx tsx src/cli.ts test/fixtures/simple-linear.bpmn -o tmp/simple-1.json
 npx tsx src/cli.ts test/fixtures/gateway-condition.bpmn -o tmp/gateway-1.json
-npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json
-npx tsx src/cli.ts docs/bpmn-examples/risk-check-process.bpmn -o tmp/risk-1.json
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-base.json --preset base
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-max.json --preset max
+npx tsx src/cli.ts docs/bpmn-examples/risk-check-process.bpmn -o tmp/risk-base.json --preset base
+npx tsx src/cli.ts docs/bpmn-examples/risk-check-process.bpmn -o tmp/risk-max.json --preset max
 ```
 
 ## JSON
@@ -23,7 +25,7 @@ npx tsx src/cli.ts docs/bpmn-examples/risk-check-process.bpmn -o tmp/risk-1.json
 Output является валидным JSON. Проверено командой:
 
 ```bash
-jq . tmp/simple-1.json tmp/gateway-1.json tmp/loan-1.json tmp/risk-1.json >/dev/null
+jq . tmp/simple-1.json tmp/gateway-1.json tmp/loan-base.json tmp/loan-max.json tmp/risk-base.json tmp/risk-max.json >/dev/null
 ```
 
 ## Метрики сжатия
@@ -32,14 +34,18 @@ jq . tmp/simple-1.json tmp/gateway-1.json tmp/loan-1.json tmp/risk-1.json >/dev/
 
 | Файл | Source BPMN | Compact JSON | Коэффициент | Уменьшение |
 | --- | ---: | ---: | ---: | ---: |
-| `loan-application-process` | 4,855 bytes | 3,006 bytes | 1.62x | 38.1% |
-| `risk-check-process` | 2,872 bytes | 1,597 bytes | 1.80x | 44.4% |
+| `loan-application-process` / `base` | 4,855 bytes | 3,006 bytes | 1.62x | 38.1% |
+| `loan-application-process` / `max` | 4,855 bytes | 1,843 bytes | 2.63x | 62.0% |
+| `risk-check-process` / `base` | 2,872 bytes | 1,597 bytes | 1.80x | 44.4% |
+| `risk-check-process` / `max` | 2,872 bytes | 872 bytes | 3.29x | 69.6% |
 
 Метрики посчитаны по файлам:
 
 ```text
-docs/bpmn-examples/loan-application-process.bpmn -> docs/json-examples/loan-application-process.json
-docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/risk-check-process.json
+docs/bpmn-examples/loan-application-process.bpmn -> docs/json-examples/base/loan-application-process.json
+docs/bpmn-examples/loan-application-process.bpmn -> docs/json-examples/max/loan-application-process.json
+docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/base/risk-check-process.json
+docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/max/risk-check-process.json
 ```
 
 ## Структура процесса
@@ -70,8 +76,8 @@ rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|widt
 Повторный запуск дал идентичный JSON:
 
 ```bash
-npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json
-npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-2.json
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json --preset max
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-2.json --preset max
 diff tmp/loan-1.json tmp/loan-2.json
 ```
 

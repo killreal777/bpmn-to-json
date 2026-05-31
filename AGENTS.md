@@ -89,10 +89,13 @@ Represent simple extension mappings compactly:
 ## Development Workflow
 
 - Keep the architecture small: `src/cli.ts` for CLI and `src/convert.ts` for conversion/projection.
+- Keep compression config logic in `src/config.ts`.
 - Prefer focused tests in `test/convert.test.ts`.
 - Use existing BPMN examples in `docs/bpmn-examples` and fixtures in `test/fixtures`.
 - Do not commit generated `tmp/` output.
 - If example JSON files are intentionally regenerated, update `docs/json-examples`.
+- Preserve `base` as the default preset unless the user explicitly requests a breaking default change.
+- Commit and push incrementally by usable feature when working on the compression backlog.
 
 ## Verification
 
@@ -106,8 +109,8 @@ npm run typecheck
 For converter behavior, also run:
 
 ```bash
-npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json
-npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-2.json
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json --preset max
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-2.json --preset max
 diff tmp/loan-1.json tmp/loan-2.json
 rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|width|height|targetNamespace|isExecutable|historyTimeToLive|asyncBefore|asyncAfter|exclusive" tmp/*.json
 ```
@@ -123,4 +126,4 @@ README and acceptance reports should include compression metrics for committed e
 - ratio as `source / json`;
 - reduction as `1 - json / source`.
 
-When JSON examples are regenerated, update the metric tables in `README.md` and `docs/ACCEPTANCE.md`.
+When JSON examples are regenerated, update the metric tables in `README.md` and `docs/ACCEPTANCE.md` for both `base` and `max`.
