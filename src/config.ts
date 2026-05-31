@@ -84,6 +84,20 @@ export function resolveCompressionConfig(input?: unknown): CompressionConfig {
   return mergeConfig(base, config);
 }
 
+export async function loadCompressionConfig(path: string): Promise<CompressionConfig> {
+  const raw = await readFile(path, 'utf8');
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid compression config JSON: ${message}`);
+  }
+
+  return resolveCompressionConfig(parsed);
+}
+
 function mergeConfig(base: CompressionConfig, override: CompressionConfig): CompressionConfig {
   return cleanConfig({
     fields: mergeNested(base.fields, override.fields),
@@ -118,3 +132,4 @@ function isCompressionPresetName(value: string): value is CompressionPresetName 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+import { readFile } from 'node:fs/promises';
