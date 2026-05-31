@@ -18,11 +18,6 @@
     {
       "elements": [
         {
-          "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": false,
-            "camunda:exclusive": true
-          },
           "id": "EndRiskCheck",
           "incoming": [
             "Flow_Calculate_To_End"
@@ -30,11 +25,6 @@
           "type": "bpmn:EndEvent"
         },
         {
-          "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": false,
-            "camunda:exclusive": true
-          },
           "id": "StartRiskCheck",
           "outgoing": [
             "Flow_Start_To_Calculate"
@@ -43,10 +33,7 @@
         },
         {
           "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": true,
-            "camunda:delegateExpression": "${calculateRiskDelegate}",
-            "camunda:exclusive": true
+            "camunda:delegateExpression": "${calculateRiskDelegate}"
           },
           "id": "YetAnotherServiceTask",
           "incoming": [

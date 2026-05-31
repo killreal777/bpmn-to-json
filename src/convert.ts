@@ -40,9 +40,6 @@ const EXCLUDED_KEYS = new Set([
 ]);
 
 const EXECUTION_KEY_MAP = new Map<string, string>([
-  ['asyncBefore', 'camunda:asyncBefore'],
-  ['asyncAfter', 'camunda:asyncAfter'],
-  ['exclusive', 'camunda:exclusive'],
   ['delegateExpression', 'camunda:delegateExpression'],
   ['class', 'camunda:class'],
   ['expression', 'camunda:expression'],
@@ -143,24 +140,55 @@ function projectExecution(element: ModdleElement): unknown {
 
 function projectExtensions(value: unknown): unknown {
   const extensionElements = isRecord(value) ? arrayOf<ModdleElement>(value.values) : [];
-  return sortItems(extensionElements.map((element) => {
-    const projected: Record<string, unknown> = {
-      type: element.$type
-    };
+  const grouped: Record<string, string[]> = {};
+  const fallback: unknown[] = [];
 
-    for (const [key, item] of Object.entries(element)) {
-      if (key === '$type' || EXCLUDED_KEYS.has(key)) {
-        continue;
-      }
+  for (const element of extensionElements) {
+    const type = element.$type;
+    const compactMapping = compactExtensionMapping(element);
 
-      const primitive = primitiveOrId(item);
-      if (primitive !== undefined) {
-        projected[key] = primitive;
-      }
+    if (type && compactMapping) {
+      grouped[type] = [...(grouped[type] ?? []), compactMapping];
+      continue;
     }
 
-    return cleanValue(projected);
-  }));
+    fallback.push(projectExtensionObject(element));
+  }
+
+  return cleanValue({
+    ...sortObject(grouped),
+    other: sortItems(fallback)
+  });
+}
+
+function compactExtensionMapping(element: ModdleElement): string | undefined {
+  const source = stringValue(element.source ?? element.sourceExpression);
+  const target = stringValue(element.target);
+
+  if (!source || !target) {
+    return undefined;
+  }
+
+  return `${source}->${target}`;
+}
+
+function projectExtensionObject(element: ModdleElement): unknown {
+  const projected: Record<string, unknown> = {
+    type: element.$type
+  };
+
+  for (const [key, item] of Object.entries(element)) {
+    if (key === '$type' || EXCLUDED_KEYS.has(key)) {
+      continue;
+    }
+
+    const primitive = primitiveOrId(item);
+    if (primitive !== undefined) {
+      projected[key] = primitive;
+    }
+  }
+
+  return cleanValue(projected);
 }
 
 function projectScript(value: unknown): unknown {
@@ -232,6 +260,10 @@ function isExcludedElement(element: ModdleElement): boolean {
 
 function sortItems<T>(items: T[]): T[] {
   return [...items].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+}
+
+function sortObject<T>(value: Record<string, T>): Record<string, T> {
+  return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)));
 }
 
 function sortKey(value: unknown): string {

@@ -19,10 +19,7 @@
       "elements": [
         {
           "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": true,
-            "camunda:delegateExpression": "${publishDecisionDelegate}",
-            "camunda:exclusive": true
+            "camunda:delegateExpression": "${publishDecisionDelegate}"
           },
           "id": "Activity_0jo48pq",
           "incoming": [
@@ -36,38 +33,17 @@
         },
         {
           "calledElement": "risk-check",
-          "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": true,
-            "camunda:exclusive": true
+          "extensions": {
+            "camunda:In": [
+              "applicationId->applicationId",
+              "applicantName->clientId",
+              "clientId->applicantName",
+              "amount->loanAmount"
+            ],
+            "camunda:Out": [
+              "riskScore->riskScore"
+            ]
           },
-          "extensions": [
-            {
-              "source": "applicationId",
-              "target": "applicationId",
-              "type": "camunda:In"
-            },
-            {
-              "source": "applicantName",
-              "target": "clientId",
-              "type": "camunda:In"
-            },
-            {
-              "source": "clientId",
-              "target": "applicantName",
-              "type": "camunda:In"
-            },
-            {
-              "source": "amount",
-              "target": "loanAmount",
-              "type": "camunda:In"
-            },
-            {
-              "sourceExpression": "riskScore",
-              "target": "riskScore",
-              "type": "camunda:Out"
-            }
-          ],
           "id": "CallRiskCheck",
           "incoming": [
             "Flow_Save_To_Risk"
@@ -79,11 +55,6 @@
           "type": "bpmn:CallActivity"
         },
         {
-          "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": false,
-            "camunda:exclusive": true
-          },
           "id": "EndLoanApplication",
           "incoming": [
             "Flow_Publish_To_End"
@@ -92,10 +63,7 @@
         },
         {
           "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": true,
-            "camunda:delegateExpression": "${saveApplicationDelegate}",
-            "camunda:exclusive": true
+            "camunda:delegateExpression": "${saveApplicationDelegate}"
           },
           "id": "SaveApplication",
           "incoming": [
@@ -108,11 +76,6 @@
           "type": "bpmn:ServiceTask"
         },
         {
-          "execution": {
-            "camunda:asyncAfter": false,
-            "camunda:asyncBefore": false,
-            "camunda:exclusive": true
-          },
           "id": "StartLoanApplication",
           "outgoing": [
             "Flow_Start_To_Save"

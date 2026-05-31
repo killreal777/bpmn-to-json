@@ -20,9 +20,9 @@ The JSON projection keeps information that helps understand process structure an
 - incoming and outgoing flow ids;
 - gateway conditions;
 - documentation text when present;
-- Camunda execution details such as `camunda:asyncBefore`, `camunda:asyncAfter`, `camunda:exclusive`, `camunda:delegateExpression`;
+- compact Camunda execution details such as `camunda:delegateExpression`;
 - call activity `calledElement`;
-- compact extension mappings such as `camunda:In` and `camunda:Out`.
+- compact extension mappings grouped by type, for example `camunda:In: ["source->target"]`.
 
 ## What It Drops
 
@@ -33,6 +33,7 @@ The converter does not serialize the full BPMN moddle object model. It intention
 - XML namespace noise and editor-only metadata;
 - cyclic moddle references such as `$parent`;
 - `targetNamespace`, `isExecutable`, and `camunda:historyTimeToLive`.
+- compression-oriented execution flags: `camunda:asyncBefore`, `camunda:asyncAfter`, and `camunda:exclusive`.
 
 ## Requirements
 
@@ -93,8 +94,8 @@ Current example outputs:
 
 | Example | Source BPMN | Compact JSON | Ratio | Reduction |
 | --- | ---: | ---: | ---: | ---: |
-| `loan-application-process` | 4,855 bytes | 4,150 bytes | 1.17x | 14.5% |
-| `risk-check-process` | 2,872 bytes | 2,036 bytes | 1.41x | 29.1% |
+| `loan-application-process` | 4,855 bytes | 3,006 bytes | 1.62x | 38.1% |
+| `risk-check-process` | 2,872 bytes | 1,597 bytes | 1.80x | 44.4% |
 
 Recalculate metrics with:
 

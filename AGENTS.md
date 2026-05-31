@@ -73,7 +73,18 @@ Exclude:
 - `isExecutable`;
 - `camunda:historyTimeToLive`.
 
-Important: execution fields such as `camunda:asyncBefore`, `camunda:asyncAfter`, and `camunda:exclusive` are meaningful and must be preserved when available.
+Compression backlog decision: omit `camunda:asyncBefore`, `camunda:asyncAfter`, and `camunda:exclusive` from compact JSON.
+
+Represent simple extension mappings compactly:
+
+```json
+{
+  "extensions": {
+    "camunda:In": ["source->target"],
+    "camunda:Out": ["sourceExpression->target"]
+  }
+}
+```
 
 ## Development Workflow
 
@@ -98,7 +109,7 @@ For converter behavior, also run:
 npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json
 npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-2.json
 diff tmp/loan-1.json tmp/loan-2.json
-rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|width|height|targetNamespace|isExecutable|historyTimeToLive" tmp/*.json
+rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|width|height|targetNamespace|isExecutable|historyTimeToLive|asyncBefore|asyncAfter|exclusive" tmp/*.json
 ```
 
 The `rg` command should find no matches.

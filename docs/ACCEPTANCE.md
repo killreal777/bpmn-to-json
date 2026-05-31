@@ -32,8 +32,8 @@ jq . tmp/simple-1.json tmp/gateway-1.json tmp/loan-1.json tmp/risk-1.json >/dev/
 
 | Файл | Source BPMN | Compact JSON | Коэффициент | Уменьшение |
 | --- | ---: | ---: | ---: | ---: |
-| `loan-application-process` | 4,855 bytes | 4,150 bytes | 1.17x | 14.5% |
-| `risk-check-process` | 2,872 bytes | 2,036 bytes | 1.41x | 29.1% |
+| `loan-application-process` | 4,855 bytes | 3,006 bytes | 1.62x | 38.1% |
+| `risk-check-process` | 2,872 bytes | 1,597 bytes | 1.80x | 44.4% |
 
 Метрики посчитаны по файлам:
 
@@ -50,10 +50,9 @@ docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/risk-check-proc
 
 Технически значимая информация сохранена:
 
-- `camunda:asyncBefore`, `camunda:asyncAfter`, `camunda:exclusive`;
 - `camunda:delegateExpression`;
 - `calledElement` у call activity;
-- `camunda:In` и `camunda:Out` mappings;
+- компактные `camunda:In` и `camunda:Out` mappings в формате `source->target`;
 - условия sequence flow для gateway.
 
 ## Layout-информация
@@ -61,7 +60,7 @@ docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/risk-check-proc
 BPMNDI/DI/DC/layout-информация в JSON не обнаружена. Проверено командой:
 
 ```bash
-rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|width|height|targetNamespace|isExecutable|historyTimeToLive" tmp/*.json
+rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|width|height|targetNamespace|isExecutable|historyTimeToLive|asyncBefore|asyncAfter|exclusive" tmp/*.json
 ```
 
 Команда не нашла совпадений.
@@ -80,7 +79,7 @@ diff tmp/loan-1.json tmp/loan-2.json
 
 ## Замечания
 
-- `targetNamespace`, `isExecutable` и `camunda:historyTimeToLive` исключены из compact JSON по согласованному решению.
+- `targetNamespace`, `isExecutable`, `camunda:historyTimeToLive`, `camunda:asyncBefore`, `camunda:asyncAfter` и `camunda:exclusive` исключены из compact JSON по согласованному решению.
 - Camunda moddle descriptor подключен, чтобы runtime видел execution-related Camunda атрибуты.
 
 ## Решение

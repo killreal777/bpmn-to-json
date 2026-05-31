@@ -54,32 +54,30 @@ describe('convertBpmnToJson', () => {
       name: 'Save application'
     });
     expect(saveApplication?.execution).toEqual({
-      'camunda:asyncAfter': false,
-      'camunda:asyncBefore': true,
-      'camunda:delegateExpression': '${saveApplicationDelegate}',
-      'camunda:exclusive': true
-    });
-    expect(callRiskCheck?.execution).toEqual({
-      'camunda:asyncAfter': false,
-      'camunda:asyncBefore': true,
-      'camunda:exclusive': true
+      'camunda:delegateExpression': '${saveApplicationDelegate}'
     });
     expect(callRiskCheck).toMatchObject({
       id: 'CallRiskCheck',
       type: 'bpmn:CallActivity',
       name: 'Run risk check',
       calledElement: 'risk-check',
-      extensions: [
-        { type: 'camunda:In', source: 'applicationId', target: 'applicationId' },
-        { type: 'camunda:In', source: 'applicantName', target: 'clientId' },
-        { type: 'camunda:In', source: 'clientId', target: 'applicantName' },
-        { type: 'camunda:In', source: 'amount', target: 'loanAmount' },
-        { type: 'camunda:Out', sourceExpression: 'riskScore', target: 'riskScore' }
-      ]
+      extensions: {
+        'camunda:In': [
+          'applicationId->applicationId',
+          'applicantName->clientId',
+          'clientId->applicantName',
+          'amount->loanAmount'
+        ],
+        'camunda:Out': ['riskScore->riskScore']
+      }
     });
+    expect(callRiskCheck).not.toHaveProperty('execution');
     expect(serialized).not.toContain('historyTimeToLive');
     expect(serialized).not.toContain('targetNamespace');
     expect(serialized).not.toContain('isExecutable');
+    expect(serialized).not.toContain('asyncBefore');
+    expect(serialized).not.toContain('asyncAfter');
+    expect(serialized).not.toContain('exclusive');
   });
 
   it('projects gateway conditions deterministically', async () => {
