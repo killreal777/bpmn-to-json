@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+
 export const PRESET_NAMES = ['base', 'max'] as const;
 
 export type CompressionPresetName = typeof PRESET_NAMES[number];
@@ -131,4 +133,3 @@ function isCompressionPresetName(value: string): value is CompressionPresetName 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
-import { readFile } from 'node:fs/promises';

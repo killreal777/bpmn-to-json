@@ -6,10 +6,11 @@ import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 
 const execFileAsync = promisify(execFile);
+const tsxBin = join('node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx');
 
 describe('CLI compression config', () => {
   it('prints a built-in config', async () => {
-    const { stdout } = await execFileAsync('npx', ['tsx', 'src/cli.ts', '--print-config', 'max']);
+    const { stdout } = await execFileAsync(tsxBin, ['src/cli.ts', '--print-config', 'max']);
     const config = JSON.parse(stdout) as { optimizations: Record<string, boolean> };
 
     expect(config.optimizations.compactServiceTaskImplementation).toBe(true);
@@ -20,8 +21,7 @@ describe('CLI compression config', () => {
     const dir = await mkdtemp(join(tmpdir(), 'bpmn-cli-'));
     const output = join(dir, 'loan-max.json');
 
-    await execFileAsync('npx', [
-      'tsx',
+    await execFileAsync(tsxBin, [
       'src/cli.ts',
       'docs/bpmn-examples/loan-application-process.bpmn',
       '-o',
@@ -50,8 +50,7 @@ describe('CLI compression config', () => {
       output: { pretty: false }
     }), 'utf8');
 
-    await execFileAsync('npx', [
-      'tsx',
+    await execFileAsync(tsxBin, [
       'src/cli.ts',
       'docs/bpmn-examples/loan-application-process.bpmn',
       '-o',
