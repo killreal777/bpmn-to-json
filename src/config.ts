@@ -5,7 +5,6 @@ export type CompressionPresetName = typeof PRESET_NAMES[number];
 export type CompressionConfig = {
   extends?: CompressionPresetName;
   fields?: {
-    include?: string[];
     exclude?: string[];
   };
   optimizations?: {

@@ -6,7 +6,7 @@ Add a flexible compression configuration system for the BPMN XML to JSON convert
 
 The converter should support built-in presets and user-defined JSON config files. A user must be able to create a new config or edit an exported preset to control:
 
-- which fields are included or excluded from the final JSON;
+- which fields are excluded from the final JSON;
 - which output optimizations are applied;
 - whether JSON is pretty-printed or minified.
 
@@ -85,7 +85,6 @@ type CompressionPresetName = 'base' | 'max';
 type CompressionConfig = {
   extends?: CompressionPresetName;
   fields?: {
-    include?: string[];
     exclude?: string[];
   };
   optimizations?: {
@@ -313,7 +312,6 @@ Filtering rules:
 
 - `exclude` removes matching keys recursively by simple path;
 - paths such as `elements.incoming` match `incoming` inside any `elements` array;
-- `include` is reserved for an allow-list mode, but MVP implementation may focus on `exclude` if tests cover it explicitly;
 - unknown field paths are accepted and simply do not match anything.
 
 ## Error Handling
