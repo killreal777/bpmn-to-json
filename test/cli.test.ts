@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
+import { OPTIMIZATION_IDS } from '../src/optimizations/ids.js';
 
 const execFileAsync = promisify(execFile);
 const tsxBin = join('node_modules', '.bin', process.platform === 'win32' ? 'tsx.cmd' : 'tsx');
@@ -11,10 +12,16 @@ const tsxBin = join('node_modules', '.bin', process.platform === 'win32' ? 'tsx.
 describe('CLI compression config', () => {
   it('prints a built-in config', async () => {
     const { stdout } = await execFileAsync(tsxBin, ['src/cli.ts', '--print-config', 'optimized']);
-    const config = JSON.parse(stdout) as { optimizations: Record<string, boolean> };
+    const config = JSON.parse(stdout) as { optimizations: { enabled: string[] } };
 
-    expect(config.optimizations.compactServiceTaskImplementation).toBe(true);
-    expect(config.optimizations.compactFlowRefs).toBe(true);
+    expect(config.optimizations.enabled).toEqual([
+      OPTIMIZATION_IDS.compactElementMeta,
+      OPTIMIZATION_IDS.compactCallMappings,
+      OPTIMIZATION_IDS.compactFlows,
+      OPTIMIZATION_IDS.compactConditions,
+      OPTIMIZATION_IDS.omitRedundantGraphRefs,
+      OPTIMIZATION_IDS.omitTopLevelMetadata
+    ]);
   });
 
   it('writes output with a selected preset', async () => {
@@ -36,7 +43,8 @@ describe('CLI compression config', () => {
     expect(json).not.toContain('sourceRef');
     expect(json).not.toContain('targetRef');
     expect(json).not.toContain('calledElement');
-    expect(json).toContain('"impl"');
+    expect(json).toContain('"meta"');
+    expect(json).toContain('impl=${saveApplicationDelegate}');
   });
 
   it('loads custom config and honors minified output', async () => {
@@ -46,7 +54,7 @@ describe('CLI compression config', () => {
 
     await writeFile(configPath, JSON.stringify({
       extends: 'optimized',
-      optimizations: { compactTypes: false },
+      optimizations: { enabled: [OPTIMIZATION_IDS.compactFlows] },
       output: { pretty: false }
     }), 'utf8');
 
