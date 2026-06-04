@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "convert": "tsx src/cli.ts"
+    "convert": "tsx src/cli.ts",
+    "metrics": "tsx src/metrics.ts"
   },
   "dependencies": {
     "bpmn-moddle": "^9.0.4",
