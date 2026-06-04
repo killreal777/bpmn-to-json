@@ -5,7 +5,7 @@
 Refine the converter into two named modes:
 
 - `base`: a stable BPMN JSON projection that removes only clearly unnecessary data.
-- `optimized`: a RAG-oriented representation produced by applying configurable optimizations to the base JSON model.
+- `optimized`: a compact representation for RAG and agentic development, produced by applying configurable optimizations to the base JSON model.
 
 The converter remains local and deterministic. Runtime conversion must not use network calls, LLM calls, or full moddle serialization.
 
@@ -73,7 +73,12 @@ Optimized mode does not parse BPMN independently. It takes the Base JSON model a
 BPMN XML -> BaseJsonModel -> Optimization[] -> OptimizedJsonModel
 ```
 
-Optimized mode is not a full CSV export. It stays JSON, but individual repeated structures may use CSV-like strings where JSON keys are boilerplate and do not add useful semantic load for RAG chunks.
+Optimized mode is intended for two related uses:
+
+- building RAG inputs where chunks should contain as much useful BPMN meaning as possible;
+- agentic development workflows where the BPMN model needs to fit into context without wasting tokens on repetitive JSON boilerplate.
+
+Optimized mode is not a full CSV export. It stays JSON, but individual repeated structures may use CSV-like strings where JSON keys are boilerplate and do not add useful semantic load for RAG chunks or agent context.
 
 Examples of targeted optimizations:
 
