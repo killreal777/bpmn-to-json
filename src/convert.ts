@@ -50,6 +50,9 @@ const EXCLUDED_KEYS = new Set([
 ]);
 
 const EXECUTION_KEY_MAP = new Map<string, string>([
+  ['asyncBefore', 'camunda:asyncBefore'],
+  ['asyncAfter', 'camunda:asyncAfter'],
+  ['exclusive', 'camunda:exclusive'],
   ['delegateExpression', 'camunda:delegateExpression'],
   ['class', 'camunda:class'],
   ['expression', 'camunda:expression'],
@@ -120,7 +123,6 @@ function projectFlowElement(element: ModdleElement, config: CompressionConfig): 
     id: element.id,
     type: projectType(element.$type, config),
     name: element.name,
-    documentation: projectDocumentation(element.documentation),
     calledElement: config.optimizations?.compactCallActivity ? undefined : stringValue(element.calledElement),
     call: config.optimizations?.compactCallActivity ? stringValue(element.calledElement) : undefined,
     scriptFormat: stringValue(element.scriptFormat),
@@ -152,6 +154,10 @@ function projectExecution(element: ModdleElement): unknown {
   const execution: Record<string, unknown> = {};
 
   for (const [sourceKey, outputKey] of EXECUTION_KEY_MAP) {
+    if (!Object.prototype.hasOwnProperty.call(element, sourceKey)) {
+      continue;
+    }
+
     const value = primitiveOrId(element[sourceKey]);
     if (value !== undefined) {
       execution[outputKey] = value;
@@ -163,19 +169,26 @@ function projectExecution(element: ModdleElement): unknown {
 
 function projectExtensions(value: unknown, config: CompressionConfig): unknown {
   const extensionElements = isRecord(value) ? arrayOf<ModdleElement>(value.values) : [];
-  const grouped: Record<string, string[]> = {};
+  const grouped: Record<string, unknown[]> = {};
   const fallback: unknown[] = [];
 
   for (const element of extensionElements) {
     const type = element.$type;
     const compactMapping = compactExtensionMapping(element, config);
 
-    if (type && compactMapping) {
+    if (type && config.optimizations?.compactMappings && compactMapping) {
       grouped[type] = [...(grouped[type] ?? []), compactMapping];
       continue;
     }
 
-    fallback.push(projectExtensionObject(element));
+    const projected = projectExtensionObject(element, Boolean(type));
+
+    if (type && projected) {
+      grouped[type] = [...(grouped[type] ?? []), projected];
+      continue;
+    }
+
+    fallback.push(projected);
   }
 
   return cleanValue({
@@ -195,8 +208,8 @@ function compactExtensionMapping(element: ModdleElement, config: CompressionConf
   return config.optimizations?.compactSameNameMappings && source === target ? source : `${source}->${target}`;
 }
 
-function projectExtensionObject(element: ModdleElement): unknown {
-  const projected: Record<string, unknown> = {
+function projectExtensionObject(element: ModdleElement, omitType = false): unknown {
+  const projected: Record<string, unknown> = omitType ? {} : {
     type: element.$type
   };
 
@@ -328,14 +341,6 @@ function removePath(value: unknown, path: string[]): unknown {
   }
 
   return next;
-}
-
-function projectDocumentation(value: unknown): unknown {
-  const docs = arrayOf<ModdleElement>(value)
-    .map((doc) => stringValue(doc.text ?? doc.textFormat))
-    .filter((text): text is string => Boolean(text));
-
-  return docs;
 }
 
 function idsOf(value: unknown): string[] {

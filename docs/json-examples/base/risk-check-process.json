@@ -33,6 +33,7 @@
         },
         {
           "execution": {
+            "camunda:asyncBefore": true,
             "camunda:delegateExpression": "${calculateRiskDelegate}"
           },
           "id": "YetAnotherServiceTask",

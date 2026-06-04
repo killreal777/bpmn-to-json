@@ -6,12 +6,22 @@ import {
 } from '../src/config.js';
 
 describe('compression config', () => {
-  it('provides base and max presets', () => {
-    expect(PRESET_NAMES).toEqual(['base', 'max']);
-    expect(getPresetConfig('base').optimizations?.compactMappings).toBe(true);
+  it('provides base and optimized presets', () => {
+    expect(PRESET_NAMES).toEqual(['base', 'optimized']);
+    expect(getPresetConfig('base').optimizations).toMatchObject({
+      compactMappings: false,
+      compactSameNameMappings: false,
+      compactServiceTaskImplementation: false,
+      compactTypes: false,
+      compactFlowRefs: false,
+      compactCallActivity: false,
+      compactConditions: false,
+      omitIncomingOutgoing: false,
+      omitDefinitions: false
+    });
     expect(getPresetConfig('base').optimizations?.compactSameNameMappings).toBe(false);
     expect(getPresetConfig('base').output?.pretty).toBe(true);
-    expect(getPresetConfig('max').optimizations).toMatchObject({
+    expect(getPresetConfig('optimized').optimizations).toMatchObject({
       compactMappings: true,
       compactSameNameMappings: true,
       compactServiceTaskImplementation: true,
@@ -30,7 +40,7 @@ describe('compression config', () => {
 
   it('extends a preset and applies overrides', () => {
     const config = resolveCompressionConfig({
-      extends: 'max',
+      extends: 'optimized',
       optimizations: { compactTypes: false },
       output: { pretty: false },
       fields: { exclude: ['collaborations'] }
@@ -45,10 +55,11 @@ describe('compression config', () => {
   it('rejects unknown presets', () => {
     expect(() => getPresetConfig('tiny')).toThrow('Unknown compression preset');
     expect(() => resolveCompressionConfig({ extends: 'tiny' })).toThrow('Unknown compression preset');
+    expect(() => getPresetConfig('max')).toThrow('Unknown compression preset');
   });
 
   it('rejects non-object config values', () => {
-    expect(() => resolveCompressionConfig('max')).toThrow('Compression config must be an object');
+    expect(() => resolveCompressionConfig('optimized')).toThrow('Compression config must be an object');
     expect(() => resolveCompressionConfig(null)).toThrow('Compression config must be an object');
   });
 });
