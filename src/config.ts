@@ -1,4 +1,9 @@
 import { readFile } from 'node:fs/promises';
+import {
+  isOptimizationId,
+  OPTIMIZATION_IDS,
+  type OptimizationId
+} from './optimizations/ids.js';
 
 export const PRESET_NAMES = ['base', 'optimized'] as const;
 
@@ -10,15 +15,7 @@ export type CompressionConfig = {
     exclude?: string[];
   };
   optimizations?: {
-    compactMappings?: boolean;
-    compactSameNameMappings?: boolean;
-    compactServiceTaskImplementation?: boolean;
-    compactTypes?: boolean;
-    compactFlowRefs?: boolean;
-    compactCallActivity?: boolean;
-    compactConditions?: boolean;
-    omitIncomingOutgoing?: boolean;
-    omitDefinitions?: boolean;
+    enabled?: OptimizationId[];
   };
   output?: {
     pretty?: boolean;
@@ -28,34 +25,22 @@ export type CompressionConfig = {
 export const BUILT_IN_PRESETS: Record<CompressionPresetName, CompressionConfig> = {
   base: {
     optimizations: {
-      compactMappings: false,
-      compactSameNameMappings: false,
-      compactServiceTaskImplementation: false,
-      compactTypes: false,
-      compactFlowRefs: false,
-      compactCallActivity: false,
-      compactConditions: false,
-      omitIncomingOutgoing: false,
-      omitDefinitions: false
+      enabled: []
     },
     output: {
       pretty: true
     }
   },
   optimized: {
-    fields: {
-      exclude: ['collaborations']
-    },
     optimizations: {
-      compactMappings: true,
-      compactSameNameMappings: true,
-      compactServiceTaskImplementation: true,
-      compactTypes: true,
-      compactFlowRefs: true,
-      compactCallActivity: true,
-      compactConditions: true,
-      omitIncomingOutgoing: true,
-      omitDefinitions: true
+      enabled: [
+        OPTIMIZATION_IDS.compactElementMeta,
+        OPTIMIZATION_IDS.compactCallMappings,
+        OPTIMIZATION_IDS.compactFlows,
+        OPTIMIZATION_IDS.compactConditions,
+        OPTIMIZATION_IDS.omitRedundantGraphRefs,
+        OPTIMIZATION_IDS.omitTopLevelMetadata
+      ]
     },
     output: {
       pretty: true
@@ -82,7 +67,7 @@ export function resolveCompressionConfig(input?: unknown): CompressionConfig {
 
   const config = input as CompressionConfig;
   const base = config.extends ? getPresetConfig(config.extends) : getPresetConfig('base');
-  return mergeConfig(base, config);
+  return validateConfig(mergeConfig(base, config));
 }
 
 export async function loadCompressionConfig(path: string): Promise<CompressionConfig> {
@@ -124,6 +109,18 @@ function cleanConfig(config: CompressionConfig): CompressionConfig {
 
 function cloneConfig(config: CompressionConfig): CompressionConfig {
   return cleanConfig(config);
+}
+
+function validateConfig(config: CompressionConfig): CompressionConfig {
+  const enabled = config.optimizations?.enabled ?? [];
+
+  for (const id of enabled) {
+    if (typeof id !== 'string' || !isOptimizationId(id)) {
+      throw new Error(`Unknown optimization id: ${String(id)}`);
+    }
+  }
+
+  return config;
 }
 
 function isCompressionPresetName(value: string): value is CompressionPresetName {

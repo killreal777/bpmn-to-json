@@ -4,34 +4,23 @@ import {
   PRESET_NAMES,
   resolveCompressionConfig
 } from '../src/config.js';
+import { OPTIMIZATION_IDS } from '../src/optimizations/ids.js';
 
 describe('compression config', () => {
   it('provides base and optimized presets', () => {
     expect(PRESET_NAMES).toEqual(['base', 'optimized']);
     expect(getPresetConfig('base').optimizations).toMatchObject({
-      compactMappings: false,
-      compactSameNameMappings: false,
-      compactServiceTaskImplementation: false,
-      compactTypes: false,
-      compactFlowRefs: false,
-      compactCallActivity: false,
-      compactConditions: false,
-      omitIncomingOutgoing: false,
-      omitDefinitions: false
+      enabled: []
     });
-    expect(getPresetConfig('base').optimizations?.compactSameNameMappings).toBe(false);
     expect(getPresetConfig('base').output?.pretty).toBe(true);
-    expect(getPresetConfig('optimized').optimizations).toMatchObject({
-      compactMappings: true,
-      compactSameNameMappings: true,
-      compactServiceTaskImplementation: true,
-      compactTypes: true,
-      compactFlowRefs: true,
-      compactCallActivity: true,
-      compactConditions: true,
-      omitIncomingOutgoing: true,
-      omitDefinitions: true
-    });
+    expect(getPresetConfig('optimized').optimizations?.enabled).toEqual([
+      OPTIMIZATION_IDS.compactElementMeta,
+      OPTIMIZATION_IDS.compactCallMappings,
+      OPTIMIZATION_IDS.compactFlows,
+      OPTIMIZATION_IDS.compactConditions,
+      OPTIMIZATION_IDS.omitRedundantGraphRefs,
+      OPTIMIZATION_IDS.omitTopLevelMetadata
+    ]);
   });
 
   it('defaults to the base preset', () => {
@@ -41,15 +30,21 @@ describe('compression config', () => {
   it('extends a preset and applies overrides', () => {
     const config = resolveCompressionConfig({
       extends: 'optimized',
-      optimizations: { compactTypes: false },
+      optimizations: { enabled: [OPTIMIZATION_IDS.compactFlows] },
       output: { pretty: false },
       fields: { exclude: ['collaborations'] }
     });
 
-    expect(config.optimizations?.compactServiceTaskImplementation).toBe(true);
-    expect(config.optimizations?.compactTypes).toBe(false);
+    expect(config.optimizations?.enabled).toEqual([OPTIMIZATION_IDS.compactFlows]);
     expect(config.output?.pretty).toBe(false);
     expect(config.fields?.exclude).toEqual(['collaborations']);
+  });
+
+  it('rejects unknown optimization ids', () => {
+    expect(() => resolveCompressionConfig({
+      extends: 'optimized',
+      optimizations: { enabled: ['notARealOptimization'] }
+    })).toThrow('Unknown optimization id: notARealOptimization');
   });
 
   it('rejects unknown presets', () => {
