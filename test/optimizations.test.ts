@@ -31,4 +31,56 @@ describe('optimization pipeline', () => {
 
     expect(applyOptimizations(model, [])).toEqual(model);
   });
+
+  it('compacts repeated element fields into meta strings', () => {
+    const model = {
+      processes: [
+        {
+          elements: [
+            {
+              id: 'SaveApplication',
+              type: 'bpmn:ServiceTask',
+              name: 'Save application',
+              execution: {
+                'camunda:asyncBefore': true,
+                'camunda:delegateExpression': '${saveApplicationDelegate}'
+              }
+            },
+            {
+              id: 'CallRiskCheck',
+              type: 'bpmn:CallActivity',
+              name: 'Run risk check',
+              calledElement: 'risk-check',
+              execution: {
+                'camunda:asyncBefore': true
+              }
+            },
+            {
+              id: 'StartLoanApplication',
+              type: 'bpmn:StartEvent'
+            }
+          ]
+        }
+      ]
+    };
+
+    const optimized = applyOptimizations(model, [OPTIMIZATION_IDS.compactElementMeta]);
+    const [process] = optimized.processes as Array<{ elements: Array<Record<string, unknown>> }>;
+
+    expect(process.elements).toContainEqual({
+      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate}',
+      execution: {
+        'camunda:asyncBefore': true
+      }
+    });
+    expect(process.elements).toContainEqual({
+      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
+      execution: {
+        'camunda:asyncBefore': true
+      }
+    });
+    expect(process.elements).toContainEqual({
+      meta: 'StartLoanApplication,StartEvent'
+    });
+  });
 });
