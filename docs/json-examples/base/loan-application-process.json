@@ -19,6 +19,7 @@
       "elements": [
         {
           "execution": {
+            "camunda:asyncBefore": true,
             "camunda:delegateExpression": "${publishDecisionDelegate}"
           },
           "id": "Activity_0jo48pq",
@@ -33,15 +34,33 @@
         },
         {
           "calledElement": "risk-check",
+          "execution": {
+            "camunda:asyncBefore": true
+          },
           "extensions": {
             "camunda:In": [
-              "applicationId->applicationId",
-              "applicantName->clientId",
-              "clientId->applicantName",
-              "amount->loanAmount"
+              {
+                "source": "applicationId",
+                "target": "applicationId"
+              },
+              {
+                "source": "applicantName",
+                "target": "clientId"
+              },
+              {
+                "source": "clientId",
+                "target": "applicantName"
+              },
+              {
+                "source": "amount",
+                "target": "loanAmount"
+              }
             ],
             "camunda:Out": [
-              "riskScore->riskScore"
+              {
+                "sourceExpression": "riskScore",
+                "target": "riskScore"
+              }
             ]
           },
           "id": "CallRiskCheck",
@@ -63,6 +82,7 @@
         },
         {
           "execution": {
+            "camunda:asyncBefore": true,
             "camunda:delegateExpression": "${saveApplicationDelegate}"
           },
           "id": "SaveApplication",

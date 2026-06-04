@@ -10,7 +10,7 @@ const tsxBin = join('node_modules', '.bin', process.platform === 'win32' ? 'tsx.
 
 describe('CLI compression config', () => {
   it('prints a built-in config', async () => {
-    const { stdout } = await execFileAsync(tsxBin, ['src/cli.ts', '--print-config', 'max']);
+    const { stdout } = await execFileAsync(tsxBin, ['src/cli.ts', '--print-config', 'optimized']);
     const config = JSON.parse(stdout) as { optimizations: Record<string, boolean> };
 
     expect(config.optimizations.compactServiceTaskImplementation).toBe(true);
@@ -19,7 +19,7 @@ describe('CLI compression config', () => {
 
   it('writes output with a selected preset', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'bpmn-cli-'));
-    const output = join(dir, 'loan-max.json');
+    const output = join(dir, 'loan-optimized.json');
 
     await execFileAsync(tsxBin, [
       'src/cli.ts',
@@ -27,7 +27,7 @@ describe('CLI compression config', () => {
       '-o',
       output,
       '--preset',
-      'max'
+      'optimized'
     ]);
 
     const json = await readFile(output, 'utf8');
@@ -45,7 +45,7 @@ describe('CLI compression config', () => {
     const output = join(dir, 'loan-custom.json');
 
     await writeFile(configPath, JSON.stringify({
-      extends: 'max',
+      extends: 'optimized',
       optimizations: { compactTypes: false },
       output: { pretty: false }
     }), 'utf8');

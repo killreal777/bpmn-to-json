@@ -10,6 +10,9 @@
         },
         {
           "call": "risk-check",
+          "execution": {
+            "camunda:asyncBefore": true
+          },
           "extensions": {
             "camunda:In": [
               "applicationId",

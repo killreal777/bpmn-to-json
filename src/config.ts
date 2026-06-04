@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
-export const PRESET_NAMES = ['base', 'max'] as const;
+export const PRESET_NAMES = ['base', 'optimized'] as const;
 
 export type CompressionPresetName = typeof PRESET_NAMES[number];
 
@@ -28,7 +28,7 @@ export type CompressionConfig = {
 export const BUILT_IN_PRESETS: Record<CompressionPresetName, CompressionConfig> = {
   base: {
     optimizations: {
-      compactMappings: true,
+      compactMappings: false,
       compactSameNameMappings: false,
       compactServiceTaskImplementation: false,
       compactTypes: false,
@@ -42,7 +42,7 @@ export const BUILT_IN_PRESETS: Record<CompressionPresetName, CompressionConfig> 
       pretty: true
     }
   },
-  max: {
+  optimized: {
     fields: {
       exclude: ['collaborations']
     },

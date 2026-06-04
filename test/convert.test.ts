@@ -40,7 +40,7 @@ describe('convertBpmnToJson', () => {
     expect(serialized).not.toContain('isExecutable');
   });
 
-  it('preserves execution details and compact extension mappings', async () => {
+  it('preserves execution details and structured extension mappings in base mode', async () => {
     const xml = await readFile('docs/bpmn-examples/loan-application-process.bpmn', 'utf8');
     const result = await convertBpmnToJson(xml);
     const [process] = result.processes as Array<{ elements: Array<Record<string, unknown>> }>;
@@ -55,6 +55,7 @@ describe('convertBpmnToJson', () => {
       name: 'Save application'
     });
     expect(saveApplication?.execution).toEqual({
+      'camunda:asyncBefore': true,
       'camunda:delegateExpression': '${saveApplicationDelegate}'
     });
     expect(callRiskCheck).toMatchObject({
@@ -62,23 +63,28 @@ describe('convertBpmnToJson', () => {
       type: 'bpmn:CallActivity',
       name: 'Run risk check',
       calledElement: 'risk-check',
+      execution: {
+        'camunda:asyncBefore': true
+      },
       extensions: {
         'camunda:In': [
-          'applicationId->applicationId',
-          'applicantName->clientId',
-          'clientId->applicantName',
-          'amount->loanAmount'
+          { source: 'applicationId', target: 'applicationId' },
+          { source: 'applicantName', target: 'clientId' },
+          { source: 'clientId', target: 'applicantName' },
+          { source: 'amount', target: 'loanAmount' }
         ],
-        'camunda:Out': ['riskScore->riskScore']
+        'camunda:Out': [
+          { sourceExpression: 'riskScore', target: 'riskScore' }
+        ]
       }
     });
-    expect(callRiskCheck).not.toHaveProperty('execution');
     expect(serialized).not.toContain('historyTimeToLive');
     expect(serialized).not.toContain('targetNamespace');
     expect(serialized).not.toContain('isExecutable');
-    expect(serialized).not.toContain('asyncBefore');
-    expect(serialized).not.toContain('asyncAfter');
-    expect(serialized).not.toContain('exclusive');
+    expect(serialized).not.toContain('"documentation"');
+    expect(serialized).not.toContain('"impl"');
+    expect(serialized).not.toContain('"call"');
+    expect(serialized).not.toContain('applicationId->applicationId');
   });
 
   it('uses the base preset by default', async () => {
@@ -92,9 +98,9 @@ describe('convertBpmnToJson', () => {
     expect(defaultResult).toEqual(baseByConfig);
   });
 
-  it('applies the max preset optimizations', async () => {
+  it('applies the optimized preset optimizations', async () => {
     const xml = await readFile('docs/bpmn-examples/loan-application-process.bpmn', 'utf8');
-    const result = await convertBpmnToJson(xml, { preset: 'max' });
+    const result = await convertBpmnToJson(xml, { preset: 'optimized' });
     const serialized = JSON.stringify(result);
     const [process] = result.processes as Array<{
       elements: Array<Record<string, unknown>>;

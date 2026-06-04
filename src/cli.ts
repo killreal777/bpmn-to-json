@@ -18,8 +18,8 @@ type CliArgs = {
 
 const USAGE = [
   'Usage:',
-  '  npx tsx src/cli.ts <input.bpmn> -o <output.json> [--preset base|max] [--config compression.json]',
-  '  npx tsx src/cli.ts --print-config base|max'
+  '  npx tsx src/cli.ts <input.bpmn> -o <output.json> [--preset base|optimized] [--config compression.json]',
+  '  npx tsx src/cli.ts --print-config base|optimized'
 ].join('\n');
 
 async function main(args: string[]): Promise<void> {

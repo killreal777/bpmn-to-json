@@ -27,8 +27,8 @@ Input: docs/bpmn-examples/loan-application-process.bpmn
 Source BPMN: 4,855 bytes
 
 Preset      Output bytes  Ratio   Reduction
-base        3,006         1.62x   38.1%
-optimized   1,843         2.63x   62.0%
+base        3,536         1.37x   27.2%
+optimized   1,921         2.53x   60.4%
 ```
 
 The values are:
