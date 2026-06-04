@@ -98,47 +98,49 @@ describe('convertBpmnToJson', () => {
     expect(defaultResult).toEqual(baseByConfig);
   });
 
-  it('applies the optimized preset optimizations', async () => {
+  it('applies optimized element meta', async () => {
     const xml = await readFile('docs/bpmn-examples/loan-application-process.bpmn', 'utf8');
     const result = await convertBpmnToJson(xml, { preset: 'optimized' });
     const serialized = JSON.stringify(result);
     const [process] = result.processes as Array<{
       elements: Array<Record<string, unknown>>;
-      flows: Array<Record<string, unknown>>;
     }>;
 
-    const saveApplication = process.elements.find((element) => element.id === 'SaveApplication');
-    const callRiskCheck = process.elements.find((element) => element.id === 'CallRiskCheck');
-
-    expect(result).not.toHaveProperty('definitions');
-    expect(result).not.toHaveProperty('collaborations');
-    expect(serialized).not.toContain('"incoming"');
-    expect(serialized).not.toContain('"outgoing"');
-    expect(serialized).not.toContain('bpmn:');
-    expect(saveApplication).toMatchObject({
-      id: 'SaveApplication',
-      type: 'ServiceTask',
-      impl: '${saveApplicationDelegate}'
+    expect(process.elements).toContainEqual({
+      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate}',
+      execution: {
+        'camunda:asyncBefore': true
+      },
+      incoming: ['Flow_Start_To_Save'],
+      outgoing: ['Flow_Save_To_Risk']
     });
-    expect(saveApplication).not.toHaveProperty('execution');
-    expect(callRiskCheck).toMatchObject({
-      id: 'CallRiskCheck',
-      type: 'CallActivity',
-      call: 'risk-check',
+    expect(process.elements).toContainEqual({
+      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
+      execution: {
+        'camunda:asyncBefore': true
+      },
       extensions: {
-        'camunda:In': ['applicationId', 'applicantName->clientId', 'clientId->applicantName', 'amount->loanAmount'],
-        'camunda:Out': ['riskScore']
-      }
+        'camunda:In': [
+          { source: 'applicationId', target: 'applicationId' },
+          { source: 'applicantName', target: 'clientId' },
+          { source: 'clientId', target: 'applicantName' },
+          { source: 'amount', target: 'loanAmount' }
+        ],
+        'camunda:Out': [
+          { sourceExpression: 'riskScore', target: 'riskScore' }
+        ]
+      },
+      incoming: ['Flow_Save_To_Risk'],
+      outgoing: ['Flow_Risk_To_Publish']
     });
-    expect(callRiskCheck).not.toHaveProperty('calledElement');
-    expect(process.flows).toContainEqual({
-      id: 'Flow_Start_To_Save',
-      type: 'SequenceFlow',
-      from: 'StartLoanApplication',
-      to: 'SaveApplication'
-    });
-    expect(process.flows[0]).not.toHaveProperty('sourceRef');
-    expect(process.flows[0]).not.toHaveProperty('targetRef');
+    expect(serialized).not.toContain('"type":"bpmn:ServiceTask"');
+    expect(serialized).not.toContain('"type":"bpmn:CallActivity"');
+    expect(serialized).not.toContain('"id":"SaveApplication"');
+    expect(serialized).not.toContain('"type":"ServiceTask"');
+    expect(serialized).not.toContain('"name":"Save application"');
+    expect(serialized).not.toContain('"calledElement"');
+    expect(serialized).not.toContain('"impl"');
+    expect(serialized).not.toContain('"call"');
   });
 
   it('excludes configured fields from the final output', async () => {
