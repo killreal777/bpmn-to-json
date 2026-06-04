@@ -119,17 +119,8 @@ describe('convertBpmnToJson', () => {
       execution: {
         'camunda:asyncBefore': true
       },
-      extensions: {
-        'camunda:In': [
-          { source: 'applicationId', target: 'applicationId' },
-          { source: 'applicantName', target: 'clientId' },
-          { source: 'clientId', target: 'applicantName' },
-          { source: 'amount', target: 'loanAmount' }
-        ],
-        'camunda:Out': [
-          { sourceExpression: 'riskScore', target: 'riskScore' }
-        ]
-      },
+      in: ['applicationId', 'applicantName->clientId', 'clientId->applicantName', 'amount->loanAmount'],
+      out: ['riskScore'],
       incoming: ['Flow_Save_To_Risk'],
       outgoing: ['Flow_Risk_To_Publish']
     });
@@ -141,6 +132,9 @@ describe('convertBpmnToJson', () => {
     expect(serialized).not.toContain('"calledElement"');
     expect(serialized).not.toContain('"impl"');
     expect(serialized).not.toContain('"call"');
+    expect(serialized).not.toContain('"extensions"');
+    expect(serialized).not.toContain('camunda:In');
+    expect(serialized).not.toContain('camunda:Out');
   });
 
   it('excludes configured fields from the final output', async () => {
