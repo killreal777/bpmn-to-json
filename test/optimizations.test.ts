@@ -157,4 +157,41 @@ describe('optimization pipeline', () => {
       'Gateway_1,Task_Approve,approved,riskScore < 50@feel'
     ]);
   });
+
+  it('omits redundant graph refs and top-level metadata', () => {
+    const model = {
+      definitions: { id: 'Definitions_1' },
+      collaborations: [{ id: 'Collaboration_1' }],
+      processes: [
+        {
+          elements: [
+            {
+              meta: 'Task_1,Task,Do work',
+              incoming: ['Flow_Start_To_Task'],
+              outgoing: ['Flow_Task_To_End']
+            }
+          ],
+          flows: ['StartEvent_1,Task_1']
+        }
+      ]
+    };
+
+    const optimized = applyOptimizations(model, [
+      OPTIMIZATION_IDS.omitRedundantGraphRefs,
+      OPTIMIZATION_IDS.omitTopLevelMetadata
+    ]);
+
+    expect(optimized).toEqual({
+      processes: [
+        {
+          elements: [
+            {
+              meta: 'Task_1,Task,Do work'
+            }
+          ],
+          flows: ['StartEvent_1,Task_1']
+        }
+      ]
+    });
+  });
 });
