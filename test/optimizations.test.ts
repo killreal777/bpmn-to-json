@@ -83,4 +83,38 @@ describe('optimization pipeline', () => {
       meta: 'StartLoanApplication,StartEvent'
     });
   });
+
+  it('compacts Camunda call mappings into short in and out arrays', () => {
+    const model = {
+      processes: [
+        {
+          elements: [
+            {
+              meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
+              extensions: {
+                'camunda:In': [
+                  { source: 'applicationId', target: 'applicationId' },
+                  { source: 'applicantName', target: 'clientId' },
+                  { source: 'clientId', target: 'applicantName' },
+                  { source: 'amount', target: 'loanAmount' }
+                ],
+                'camunda:Out': [
+                  { sourceExpression: 'riskScore', target: 'riskScore' }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    };
+
+    const optimized = applyOptimizations(model, [OPTIMIZATION_IDS.compactCallMappings]);
+    const [process] = optimized.processes as Array<{ elements: Array<Record<string, unknown>> }>;
+
+    expect(process.elements[0]).toEqual({
+      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
+      in: ['applicationId', 'applicantName->clientId', 'clientId->applicantName', 'amount->loanAmount'],
+      out: ['riskScore']
+    });
+  });
 });
