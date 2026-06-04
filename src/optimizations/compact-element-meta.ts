@@ -50,6 +50,11 @@ function compactElement(value: unknown): unknown {
     extras.push(`call=${value.calledElement}`);
   }
 
+  const asyncBefore = extractAsyncBefore(execution);
+  if (asyncBefore) {
+    extras.push(asyncBefore);
+  }
+
   const meta = formatCsvLine([
     stringValue(value.id),
     compactBpmnType(value.type),
@@ -86,6 +91,15 @@ function extractImplementation(execution: Record<string, unknown> | undefined): 
   const [[key, value]] = present;
   delete execution[key];
   return value as string;
+}
+
+function extractAsyncBefore(execution: Record<string, unknown> | undefined): string | undefined {
+  if (!execution || execution['camunda:asyncBefore'] !== true) {
+    return undefined;
+  }
+
+  delete execution['camunda:asyncBefore'];
+  return 'asyncBefore';
 }
 
 function stringValue(value: unknown): string | undefined {

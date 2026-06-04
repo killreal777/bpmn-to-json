@@ -109,16 +109,10 @@ describe('convertBpmnToJson', () => {
     expect(result).not.toHaveProperty('definitions');
     expect(result).not.toHaveProperty('collaborations');
     expect(process.elements).toContainEqual({
-      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate}',
-      execution: {
-        'camunda:asyncBefore': true
-      }
+      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate},asyncBefore'
     });
     expect(process.elements).toContainEqual({
-      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
-      execution: {
-        'camunda:asyncBefore': true
-      },
+      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check,asyncBefore',
       in: ['applicationId', 'applicantName->clientId', 'clientId->applicantName', 'amount->loanAmount'],
       out: ['riskScore']
     });
@@ -133,6 +127,7 @@ describe('convertBpmnToJson', () => {
     expect(serialized).not.toContain('"extensions"');
     expect(serialized).not.toContain('camunda:In');
     expect(serialized).not.toContain('camunda:Out');
+    expect(serialized).not.toContain('camunda:asyncBefore');
     expect(serialized).not.toContain('"incoming"');
     expect(serialized).not.toContain('"outgoing"');
   });

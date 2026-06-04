@@ -68,16 +68,10 @@ describe('optimization pipeline', () => {
     const [process] = optimized.processes as Array<{ elements: Array<Record<string, unknown>> }>;
 
     expect(process.elements).toContainEqual({
-      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate}',
-      execution: {
-        'camunda:asyncBefore': true
-      }
+      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate},asyncBefore'
     });
     expect(process.elements).toContainEqual({
-      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
-      execution: {
-        'camunda:asyncBefore': true
-      }
+      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check,asyncBefore'
     });
     expect(process.elements).toContainEqual({
       meta: 'StartLoanApplication,StartEvent'
