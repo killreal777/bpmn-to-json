@@ -80,17 +80,111 @@ Optimized mode is intended for two related uses:
 
 Optimized mode is not a full CSV export. It stays JSON, but individual repeated structures may use CSV-like strings where JSON keys are boilerplate and do not add useful semantic load for RAG chunks or agent context.
 
-Examples of targeted optimizations:
+The default Optimized profile uses these optimizations in order:
 
-- compact `camunda:In` and `camunda:Out` mappings;
-- element `meta` strings for repeated element attributes such as name and implementation;
-- compact sequence flow representation;
-- optional graph links such as `next` on elements when that is better than a separate `flows` block;
-- compact call activity mappings while preserving variables passed through `camunda:In` and `camunda:Out`;
-- compact condition representation;
-- compact execution and implementation representation.
+1. `compactElementMeta`
+2. `compactCallMappings`
+3. `compactFlows`
+4. `compactConditions`
+5. `omitRedundantGraphRefs`
+6. `omitTopLevelMetadata`
 
 Each optimization is evaluated and committed separately.
+
+### `compactElementMeta`
+
+Repeated element keys are compressed into one CSV-like `meta` string:
+
+```text
+meta = id,type,name,extra...
+```
+
+Examples:
+
+```json
+{
+  "elements": [
+    { "meta": "SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate}" },
+    { "meta": "CallRiskCheck,CallActivity,Run risk check,call=risk-check" },
+    { "meta": "StartLoanApplication,StartEvent" }
+  ]
+}
+```
+
+The `id`, `type`, and `name` keys are omitted from optimized elements when their values are present in `meta`.
+
+Implementation details such as service task delegate expression and call activity target are also represented in `meta` as `impl=...` and `call=...`. Separate optimized keys such as `impl` and `call` should not be emitted by default.
+
+### `compactCallMappings`
+
+Camunda call activity mappings drop the `camunda:` boilerplate and use short keys:
+
+```json
+{
+  "meta": "CallRiskCheck,CallActivity,Run risk check,call=risk-check",
+  "in": [
+    "applicationId",
+    "applicantName->clientId",
+    "clientId->applicantName",
+    "amount->loanAmount"
+  ],
+  "out": [
+    "riskScore"
+  ]
+}
+```
+
+Mapping syntax:
+
+- same source and target: `name`;
+- different source and target: `source->target`;
+- source expression and target: `sourceExpression->target`;
+- `camunda:In` becomes `in`;
+- `camunda:Out` becomes `out`.
+
+### `compactFlows`
+
+Sequence flows are represented as strings:
+
+```json
+{
+  "flows": [
+    "StartLoanApplication,SaveApplication",
+    "Gateway_1,Task_Approve,approved,riskScore < 50"
+  ]
+}
+```
+
+Flow field order:
+
+```text
+from,to,name,condition
+```
+
+`flow.id` is omitted by default in Optimized mode because process understanding primarily depends on `from`, `to`, label, and condition.
+
+### `compactConditions`
+
+Flow conditions are compacted before or during flow string generation:
+
+- no language: `conditionBody`;
+- with language: `conditionBody@language`.
+
+Example:
+
+```text
+Gateway_1,Task_Approve,approved,riskScore < 50@feel
+```
+
+### `omitRedundantGraphRefs`
+
+Optimized mode omits element-level `incoming` and `outgoing` arrays by default because graph connectivity is represented by compact `flows`.
+
+### `omitTopLevelMetadata`
+
+Optimized mode omits `definitions` and `collaborations` by default. These structures are useful in Base mode but usually add little value to compact RAG and agent-development context.
+
+The default Optimized profile intentionally keeps `flows` rather than replacing graph connectivity with `next` links. A `next` representation may be considered later as a separate design decision, but it is not part of the first optimized implementation.
 
 ## Typed Optimization Registry
 
@@ -109,10 +203,12 @@ Optimization ids are defined once as constants:
 
 ```ts
 export const OPTIMIZATION_IDS = {
-  elementMeta: 'elementMeta',
-  compactFlows: 'compactFlows',
+  compactElementMeta: 'compactElementMeta',
   compactCallMappings: 'compactCallMappings',
-  compactConditions: 'compactConditions'
+  compactFlows: 'compactFlows',
+  compactConditions: 'compactConditions',
+  omitRedundantGraphRefs: 'omitRedundantGraphRefs',
+  omitTopLevelMetadata: 'omitTopLevelMetadata'
 } as const;
 
 export type OptimizationId =
@@ -122,8 +218,8 @@ export type OptimizationId =
 Optimization modules use the constants instead of raw string literals:
 
 ```ts
-export const elementMetaOptimization = {
-  id: OPTIMIZATION_IDS.elementMeta,
+export const compactElementMetaOptimization = {
+  id: OPTIMIZATION_IDS.compactElementMeta,
   apply(model) {
     return model;
   }
@@ -134,10 +230,12 @@ The registry maps typed ids to optimization objects:
 
 ```ts
 export const OPTIMIZATION_REGISTRY = {
-  [OPTIMIZATION_IDS.elementMeta]: elementMetaOptimization,
-  [OPTIMIZATION_IDS.compactFlows]: compactFlowsOptimization,
   [OPTIMIZATION_IDS.compactCallMappings]: compactCallMappingsOptimization,
-  [OPTIMIZATION_IDS.compactConditions]: compactConditionsOptimization
+  [OPTIMIZATION_IDS.compactElementMeta]: compactElementMetaOptimization,
+  [OPTIMIZATION_IDS.compactFlows]: compactFlowsOptimization,
+  [OPTIMIZATION_IDS.compactConditions]: compactConditionsOptimization,
+  [OPTIMIZATION_IDS.omitRedundantGraphRefs]: omitRedundantGraphRefsOptimization,
+  [OPTIMIZATION_IDS.omitTopLevelMetadata]: omitTopLevelMetadataOptimization
 } satisfies Record<OptimizationId, Optimization>;
 ```
 
@@ -145,10 +243,12 @@ Built-in profiles use typed optimization ids:
 
 ```ts
 export const OPTIMIZED_PROFILE = [
-  OPTIMIZATION_IDS.elementMeta,
-  OPTIMIZATION_IDS.compactFlows,
+  OPTIMIZATION_IDS.compactElementMeta,
   OPTIMIZATION_IDS.compactCallMappings,
-  OPTIMIZATION_IDS.compactConditions
+  OPTIMIZATION_IDS.compactFlows,
+  OPTIMIZATION_IDS.compactConditions,
+  OPTIMIZATION_IDS.omitRedundantGraphRefs,
+  OPTIMIZATION_IDS.omitTopLevelMetadata
 ] satisfies readonly OptimizationId[];
 ```
 
@@ -181,7 +281,7 @@ An external config file may look like this:
 {
   "extends": "optimized",
   "optimizations": {
-    "enabled": ["elementMeta", "compactFlows"]
+    "enabled": ["compactElementMeta", "compactFlows"]
   },
   "output": {
     "pretty": true
@@ -233,10 +333,11 @@ Potential optimization commits:
 
 ```text
 feat: add optimized element meta
-feat: compact optimized flows
 feat: compact optimized call mappings
+feat: compact optimized flows
 feat: compact optimized conditions
-feat: compact optimized execution
+feat: omit optimized graph refs
+feat: omit optimized top-level metadata
 ```
 
 ## Testing
@@ -275,14 +376,8 @@ rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|widt
 
 The `rg` command should find no matches for excluded fields.
 
-## Open Design Decisions For Optimized Mode
+## Deferred Optimized Decisions
 
-The Optimized branch should decide these optimizations one at a time:
+The first optimized implementation does not replace compact `flows` with element-level `next` links. That option remains deferred because it changes graph ownership and can make edge labels and conditions harder to represent.
 
-- whether graph connectivity is better represented by compact `flows` strings or by `next` links on elements;
-- exact CSV field order for element `meta`;
-- exact CSV field order for flow strings;
-- exact compact syntax for call activity variable mappings;
-- whether each optimization belongs in the default `optimized` profile or remains opt-in.
-
-These decisions should be made before implementing each corresponding optimization commit.
+Future optimized work may also compare alternative CSV escaping rules if BPMN values contain commas. The first implementation should use a deterministic escaping strategy rather than silently producing ambiguous CSV-like strings.
