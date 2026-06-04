@@ -7,11 +7,11 @@ import { omitRedundantGraphRefsOptimization } from './omit-redundant-graph-refs.
 import { omitTopLevelMetadataOptimization } from './omit-top-level-metadata.js';
 import type { Optimization } from './types.js';
 
-export const OPTIMIZATION_REGISTRY = {
+export const OPTIMIZATION_REGISTRY: Record<OptimizationId, Optimization> = {
   [OPTIMIZATION_IDS.compactElementMeta]: compactElementMetaOptimization,
   [OPTIMIZATION_IDS.compactCallMappings]: compactCallMappingsOptimization,
   [OPTIMIZATION_IDS.compactFlows]: compactFlowsOptimization,
   [OPTIMIZATION_IDS.compactConditions]: compactConditionsOptimization,
   [OPTIMIZATION_IDS.omitRedundantGraphRefs]: omitRedundantGraphRefsOptimization,
   [OPTIMIZATION_IDS.omitTopLevelMetadata]: omitTopLevelMetadataOptimization
-} satisfies Record<OptimizationId, Optimization>;
+};
