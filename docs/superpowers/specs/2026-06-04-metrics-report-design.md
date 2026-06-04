@@ -28,7 +28,7 @@ Source BPMN: 4,855 bytes
 
 Preset      Output bytes  Ratio   Reduction
 base        3,536         1.37x   27.2%
-optimized   1,921         2.53x   60.4%
+optimized   1,318         3.68x   72.9%
 ```
 
 The values are:

@@ -3,37 +3,25 @@
     {
       "elements": [
         {
-          "id": "EndRiskCheck",
-          "type": "EndEvent"
+          "meta": "EndRiskCheck,EndEvent"
         },
         {
-          "id": "StartRiskCheck",
-          "type": "StartEvent"
+          "meta": "StartRiskCheck,StartEvent"
         },
         {
-          "id": "YetAnotherServiceTask",
-          "impl": "${calculateRiskDelegate}",
-          "name": "Calculate risk",
-          "type": "ServiceTask"
+          "meta": "YetAnotherServiceTask,ServiceTask,Calculate risk,impl=${calculateRiskDelegate}",
+          "execution": {
+            "camunda:asyncBefore": true
+          }
         }
       ],
       "flows": [
-        {
-          "from": "YetAnotherServiceTask",
-          "id": "Flow_Calculate_To_End",
-          "to": "EndRiskCheck",
-          "type": "SequenceFlow"
-        },
-        {
-          "from": "StartRiskCheck",
-          "id": "Flow_Start_To_Calculate",
-          "to": "YetAnotherServiceTask",
-          "type": "SequenceFlow"
-        }
+        "YetAnotherServiceTask,EndRiskCheck",
+        "StartRiskCheck,YetAnotherServiceTask"
       ],
       "id": "risk-check-process",
       "name": "Risk check process",
-      "type": "Process"
+      "type": "bpmn:Process"
     }
   ]
 }
