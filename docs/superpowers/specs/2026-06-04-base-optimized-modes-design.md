@@ -24,7 +24,16 @@ Documentation may refer to them as Base and Optimized.
 
 ## Base Mode
 
-Base mode maps BPMN XML through `bpmn-moddle` into an explicit JSON model. It is not a raw moddle dump. It keeps information that explains process structure and execution behavior, and removes data that is known to be irrelevant for this project.
+Base mode maps BPMN XML through `bpmn-moddle` into an explicit JSON model. It is not a raw moddle dump, but it also must not optimize the data shape. Base mode only removes keys and structures that are known to be irrelevant for this project.
+
+Base mode must not:
+
+- compact values into CSV-like strings;
+- rename keys for compression;
+- move information between graph structures;
+- compact `camunda:In` or `camunda:Out` variable mappings;
+- collapse execution attributes into short fields such as `impl`;
+- omit meaningful keys only because they are verbose.
 
 Base mode removes:
 
@@ -54,16 +63,7 @@ Base mode keeps:
 - call activity `calledElement`;
 - extension elements, especially `camunda:In` and `camunda:Out`.
 
-The existing compact representation for simple `camunda:In` and `camunda:Out` mappings remains acceptable in Base mode:
-
-```json
-{
-  "extensions": {
-    "camunda:In": ["source->target"],
-    "camunda:Out": ["sourceExpression->target"]
-  }
-}
-```
+In Base mode, extension elements should remain structured JSON objects after excluded keys are removed. Compact mapping strings such as `"source->target"` are Optimized-mode behavior, not Base-mode behavior.
 
 ## Optimized Mode
 
@@ -77,6 +77,7 @@ Optimized mode is not a full CSV export. It stays JSON, but individual repeated 
 
 Examples of targeted optimizations:
 
+- compact `camunda:In` and `camunda:Out` mappings;
 - element `meta` strings for repeated element attributes such as name and implementation;
 - compact sequence flow representation;
 - optional graph links such as `next` on elements when that is better than a separate `flows` block;
@@ -201,6 +202,8 @@ This branch implements Base mode semantics:
 - align Base field exclusion with this spec;
 - remove `documentation`;
 - keep `camunda:asyncBefore`, `camunda:asyncAfter`, and `camunda:exclusive`;
+- remove Base-mode compact mapping behavior for `camunda:In` and `camunda:Out`;
+- keep Base-mode execution attributes as structured fields instead of compact aliases;
 - rename the old `max` preset surface to `optimized` where needed for mode naming;
 - update focused tests and documentation.
 
@@ -238,6 +241,8 @@ Base mode tests should verify that the projection:
 - keeps structural BPMN data;
 - removes layout/editor/documentation/unused runtime data;
 - keeps async/exclusive Camunda attributes;
+- keeps extension elements and variable mappings as structured JSON, not compact strings;
+- does not emit optimized aliases such as `impl`, `meta`, `next`, or compact flow strings;
 - remains deterministic.
 
 Optimized mode tests should verify each optimization independently:
