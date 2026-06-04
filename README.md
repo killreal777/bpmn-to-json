@@ -12,7 +12,7 @@ This repository implements only `BPMN XML -> compact JSON`.
 
 ## What It Keeps
 
-The JSON projection keeps information that helps understand process structure and execution behavior:
+The Base JSON projection keeps information that helps understand process structure and execution behavior:
 
 - processes, collaborations, participants;
 - flow elements such as events, tasks, gateways, call activities, and subprocess-like elements;
@@ -22,6 +22,13 @@ The JSON projection keeps information that helps understand process structure an
 - Camunda execution details such as `camunda:delegateExpression` and `camunda:asyncBefore`;
 - call activity `calledElement`;
 - structured extension elements grouped by type, for example `camunda:In: [{ "source": "x", "target": "y" }]`.
+
+The Optimized preset starts from Base JSON and applies typed optimizations:
+
+- element identity is packed into a compact `meta` string;
+- sequence flows are packed as `from,to,name,condition` strings;
+- call activity mappings use compact `in` and `out` arrays;
+- redundant graph references and top-level metadata are omitted.
 
 ## What It Drops
 
@@ -93,9 +100,7 @@ Example custom config:
     "exclude": ["definitions", "collaborations", "elements.incoming", "elements.outgoing"]
   },
   "optimizations": {
-    "compactTypes": true,
-    "compactServiceTaskImplementation": true,
-    "compactSameNameMappings": true
+    "enabled": ["compactElementMeta", "compactCallMappings", "compactFlows"]
   },
   "output": {
     "pretty": true
@@ -136,9 +141,9 @@ Current example outputs:
 | Example | Source BPMN | Compact JSON | Ratio | Reduction |
 | --- | ---: | ---: | ---: | ---: |
 | `loan-application-process` / `base` | 4,855 bytes | 3,536 bytes | 1.37x | 27.2% |
-| `loan-application-process` / `optimized` | 4,855 bytes | 1,921 bytes | 2.53x | 60.4% |
+| `loan-application-process` / `optimized` | 4,855 bytes | 1,318 bytes | 3.68x | 72.9% |
 | `risk-check-process` / `base` | 2,872 bytes | 1,638 bytes | 1.75x | 43.0% |
-| `risk-check-process` / `optimized` | 2,872 bytes | 872 bytes | 3.29x | 69.6% |
+| `risk-check-process` / `optimized` | 2,872 bytes | 611 bytes | 4.70x | 78.7% |
 
 Recalculate metrics with:
 

@@ -35,9 +35,9 @@ jq . tmp/simple-1.json tmp/gateway-1.json tmp/loan-base.json tmp/loan-optimized.
 | Файл | Source BPMN | Compact JSON | Коэффициент | Уменьшение |
 | --- | ---: | ---: | ---: | ---: |
 | `loan-application-process` / `base` | 4,855 bytes | 3,536 bytes | 1.37x | 27.2% |
-| `loan-application-process` / `optimized` | 4,855 bytes | 1,921 bytes | 2.53x | 60.4% |
+| `loan-application-process` / `optimized` | 4,855 bytes | 1,318 bytes | 3.68x | 72.9% |
 | `risk-check-process` / `base` | 2,872 bytes | 1,638 bytes | 1.75x | 43.0% |
-| `risk-check-process` / `optimized` | 2,872 bytes | 872 bytes | 3.29x | 69.6% |
+| `risk-check-process` / `optimized` | 2,872 bytes | 611 bytes | 4.70x | 78.7% |
 
 Метрики посчитаны по файлам:
 
@@ -50,7 +50,9 @@ docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/optimized/risk-
 
 ## Структура процесса
 
-По JSON можно понять основную структуру процесса: процессы, элементы, события, задачи, gateway, incoming/outgoing и sequence flows с `sourceRef`/`targetRef`.
+По Base JSON можно понять основную структуру процесса: процессы, элементы, события, задачи, gateway, incoming/outgoing и sequence flows с `sourceRef`/`targetRef`.
+
+Optimized JSON сохраняет ту же смысловую нагрузку, но сжимает повторяющиеся ключи: элементы используют `meta`, sequence flows записаны строками, а call activity mappings записаны через `in` и `out`.
 
 ## Техническая реализация
 
@@ -60,7 +62,7 @@ docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/optimized/risk-
 - `camunda:asyncBefore` в Base JSON, когда атрибут явно задан;
 - `calledElement` у call activity;
 - структурные `camunda:In` и `camunda:Out` mappings в Base JSON;
-- компактные `camunda:In` и `camunda:Out` mappings в формате `source->target` в Optimized JSON;
+- компактные `in` и `out` mappings в формате `source->target` в Optimized JSON;
 - условия sequence flow для gateway.
 
 ## Layout-информация
