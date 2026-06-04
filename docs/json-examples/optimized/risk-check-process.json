@@ -9,10 +9,7 @@
           "meta": "StartRiskCheck,StartEvent"
         },
         {
-          "meta": "YetAnotherServiceTask,ServiceTask,Calculate risk,impl=${calculateRiskDelegate}",
-          "execution": {
-            "camunda:asyncBefore": true
-          }
+          "meta": "YetAnotherServiceTask,ServiceTask,Calculate risk,impl=${calculateRiskDelegate},asyncBefore"
         }
       ],
       "flows": [

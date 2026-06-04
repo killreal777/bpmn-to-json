@@ -43,8 +43,10 @@ describe('CLI compression config', () => {
     expect(json).not.toContain('sourceRef');
     expect(json).not.toContain('targetRef');
     expect(json).not.toContain('calledElement');
+    expect(json).not.toContain('camunda:asyncBefore');
     expect(json).toContain('"meta"');
     expect(json).toContain('impl=${saveApplicationDelegate}');
+    expect(json).toContain('asyncBefore');
   });
 
   it('loads custom config and honors minified output', async () => {

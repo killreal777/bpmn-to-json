@@ -3,16 +3,10 @@
     {
       "elements": [
         {
-          "meta": "Activity_0jo48pq,ServiceTask,Publish decision,impl=${publishDecisionDelegate}",
-          "execution": {
-            "camunda:asyncBefore": true
-          }
+          "meta": "Activity_0jo48pq,ServiceTask,Publish decision,impl=${publishDecisionDelegate},asyncBefore"
         },
         {
-          "meta": "CallRiskCheck,CallActivity,Run risk check,call=risk-check",
-          "execution": {
-            "camunda:asyncBefore": true
-          },
+          "meta": "CallRiskCheck,CallActivity,Run risk check,call=risk-check,asyncBefore",
           "in": [
             "applicationId",
             "applicantName->clientId",
@@ -27,10 +21,7 @@
           "meta": "EndLoanApplication,EndEvent"
         },
         {
-          "meta": "SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate}",
-          "execution": {
-            "camunda:asyncBefore": true
-          }
+          "meta": "SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate},asyncBefore"
         },
         {
           "meta": "StartLoanApplication,StartEvent"
