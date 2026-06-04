@@ -20,6 +20,25 @@ export function formatCsvLine(fields: Array<string | undefined>): string {
   return trimmed.map((field) => escapeCsvField(field ?? '')).join(',');
 }
 
+export function compactCondition(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const body = typeof value.body === 'string' && value.body !== '' ? value.body : undefined;
+  const language = typeof value.language === 'string' && value.language !== '' ? value.language : undefined;
+
+  if (!body) {
+    return undefined;
+  }
+
+  return language ? `${body}@${language}` : body;
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

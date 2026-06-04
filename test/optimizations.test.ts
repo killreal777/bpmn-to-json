@@ -117,4 +117,44 @@ describe('optimization pipeline', () => {
       out: ['riskScore']
     });
   });
+
+  it('compacts sequence flows into CSV-like strings with conditions', () => {
+    const model = {
+      processes: [
+        {
+          flows: [
+            {
+              id: 'Flow_Start_To_Task',
+              type: 'bpmn:SequenceFlow',
+              sourceRef: 'StartEvent_1',
+              targetRef: 'Task_1'
+            },
+            {
+              id: 'Flow_Gateway_To_Approve',
+              type: 'bpmn:SequenceFlow',
+              name: 'approved',
+              sourceRef: 'Gateway_1',
+              targetRef: 'Task_Approve',
+              condition: {
+                type: 'bpmn:FormalExpression',
+                body: 'riskScore < 50',
+                language: 'feel'
+              }
+            }
+          ]
+        }
+      ]
+    };
+
+    const optimized = applyOptimizations(model, [
+      OPTIMIZATION_IDS.compactConditions,
+      OPTIMIZATION_IDS.compactFlows
+    ]);
+    const [process] = optimized.processes as Array<{ flows: string[] }>;
+
+    expect(process.flows).toEqual([
+      'StartEvent_1,Task_1',
+      'Gateway_1,Task_Approve,approved,riskScore < 50@feel'
+    ]);
+  });
 });

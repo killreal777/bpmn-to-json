@@ -187,4 +187,19 @@ describe('convertBpmnToJson', () => {
       }
     });
   });
+
+  it('applies optimized flow strings with compact conditions', async () => {
+    const xml = await readFile('test/fixtures/gateway-condition.bpmn', 'utf8');
+    const result = await convertBpmnToJson(xml, { preset: 'optimized' });
+    const [process] = result.processes as Array<{ flows: string[] }>;
+    const serialized = JSON.stringify(result);
+
+    expect(process.flows).toContain('StartEvent_1,Gateway_1');
+    expect(process.flows).toContain('Gateway_1,Task_Approve,approved,riskScore < 50@feel');
+    expect(process.flows).toContain('Gateway_1,Task_Reject,rejected,riskScore >= 50');
+    expect(serialized).not.toContain('"sourceRef"');
+    expect(serialized).not.toContain('"targetRef"');
+    expect(serialized).not.toContain('"condition"');
+    expect(serialized).not.toContain('"type":"bpmn:SequenceFlow"');
+  });
 });
