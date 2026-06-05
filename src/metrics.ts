@@ -108,7 +108,7 @@ function formatInteger(value: number): string {
   return value.toLocaleString('en-US');
 }
 
-if (process.argv[1]?.endsWith('metrics.ts')) {
+if (process.argv[1]?.endsWith('metrics.ts') || process.argv[1]?.endsWith('metrics.js')) {
   main(process.argv.slice(2)).catch((error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message);
