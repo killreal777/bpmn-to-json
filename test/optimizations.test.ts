@@ -58,6 +58,16 @@ describe('optimization pipeline', () => {
             {
               id: 'StartLoanApplication',
               type: 'bpmn:StartEvent'
+            },
+            {
+              id: 'ExternalRiskCheck',
+              type: 'bpmn:ServiceTask',
+              name: 'External risk check',
+              execution: {
+                'camunda:asyncBefore': true,
+                'camunda:type': 'external',
+                'camunda:topic': 'riskCheckDelegate'
+              }
             }
           ]
         }
@@ -68,13 +78,16 @@ describe('optimization pipeline', () => {
     const [process] = optimized.processes as Array<{ elements: Array<Record<string, unknown>> }>;
 
     expect(process.elements).toContainEqual({
-      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate},asyncBefore'
+      meta: 'ServiceTask,SaveApplication,Save application,saveApplicationDelegate,asyncBefore'
     });
     expect(process.elements).toContainEqual({
-      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check,asyncBefore'
+      meta: 'CallActivity,CallRiskCheck,Run risk check,risk-check,asyncBefore'
     });
     expect(process.elements).toContainEqual({
-      meta: 'StartLoanApplication,StartEvent'
+      meta: 'StartEvent,StartLoanApplication'
+    });
+    expect(process.elements).toContainEqual({
+      meta: 'ServiceTask,ExternalRiskCheck,External risk check,riskCheckDelegate,external,asyncBefore'
     });
   });
 
@@ -84,13 +97,15 @@ describe('optimization pipeline', () => {
         {
           elements: [
             {
-              meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
+              meta: 'CallActivity,CallRiskCheck,Run risk check,risk-check',
               extensions: {
                 'camunda:In': [
                   { source: 'applicationId', target: 'applicationId' },
                   { source: 'applicantName', target: 'clientId' },
                   { source: 'clientId', target: 'applicantName' },
-                  { source: 'amount', target: 'loanAmount' }
+                  { source: 'amount', target: 'loanAmount' },
+                  { sourceExpression: '${amount + fee}', target: 'totalAmount' },
+                  { variables: 'all' }
                 ],
                 'camunda:Out': [
                   { sourceExpression: 'riskScore', target: 'riskScore' }
@@ -106,9 +121,16 @@ describe('optimization pipeline', () => {
     const [process] = optimized.processes as Array<{ elements: Array<Record<string, unknown>> }>;
 
     expect(process.elements[0]).toEqual({
-      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check',
-      in: ['applicationId', 'applicantName->clientId', 'clientId->applicantName', 'amount->loanAmount'],
-      out: ['riskScore']
+      meta: 'CallActivity,CallRiskCheck,Run risk check,risk-check',
+      in: [
+        'applicationId',
+        'applicantName->clientId',
+        'clientId->applicantName',
+        'amount->loanAmount',
+        '=${amount + fee}->totalAmount',
+        '*'
+      ],
+      out: ['=riskScore->riskScore']
     });
   });
 

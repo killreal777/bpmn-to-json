@@ -26,6 +26,7 @@ export const compactElementMetaOptimization = {
         continue;
       }
 
+      process.type = compactBpmnType(process.type);
       process.elements = process.elements.map(compactElement);
     }
 
@@ -43,11 +44,16 @@ function compactElement(value: unknown): unknown {
   const implementation = extractImplementation(execution);
 
   if (implementation) {
-    extras.push(`impl=${implementation}`);
+    extras.push(implementation);
   }
 
   if (typeof value.calledElement === 'string' && value.calledElement !== '') {
-    extras.push(`call=${value.calledElement}`);
+    extras.push(value.calledElement);
+  }
+
+  const external = extractExternalType(execution);
+  if (external) {
+    extras.push(external);
   }
 
   const asyncBefore = extractAsyncBefore(execution);
@@ -56,8 +62,8 @@ function compactElement(value: unknown): unknown {
   }
 
   const meta = formatCsvLine([
-    stringValue(value.id),
     compactBpmnType(value.type),
+    stringValue(value.id),
     stringValue(value.name),
     ...extras
   ]);
@@ -69,7 +75,7 @@ function compactElement(value: unknown): unknown {
     type: undefined,
     name: undefined,
     calledElement: undefined,
-    execution: execution ? cleanRecord(execution) : undefined
+    execution: execution ? cleanRecord(compactExecution(execution)) : undefined
   };
 
   return cleanRecord(compacted);
@@ -90,7 +96,16 @@ function extractImplementation(execution: Record<string, unknown> | undefined): 
 
   const [[key, value]] = present;
   delete execution[key];
-  return value as string;
+  return normalizeImplementationValue(value as string);
+}
+
+function extractExternalType(execution: Record<string, unknown> | undefined): string | undefined {
+  if (!execution || execution['camunda:type'] !== 'external') {
+    return undefined;
+  }
+
+  delete execution['camunda:type'];
+  return 'external';
 }
 
 function extractAsyncBefore(execution: Record<string, unknown> | undefined): string | undefined {
@@ -100,6 +115,24 @@ function extractAsyncBefore(execution: Record<string, unknown> | undefined): str
 
   delete execution['camunda:asyncBefore'];
   return 'asyncBefore';
+}
+
+function compactExecution(execution: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(execution).map(([key, value]) => [
+    stripNamespace(key),
+    typeof value === 'string' ? stripNamespace(value) : value
+  ]));
+}
+
+function normalizeImplementationValue(value: string): string {
+  const expressionMatch = /^\$\{(.+)\}$/.exec(value);
+  return expressionMatch ? expressionMatch[1] : value;
+}
+
+function stripNamespace(value: string): string {
+  const knownPrefixes = ['bpmn:', 'camunda:', 'bpmndi:', 'dc:', 'di:'];
+  const prefix = knownPrefixes.find((item) => value.startsWith(item));
+  return prefix ? value.slice(prefix.length) : value;
 }
 
 function stringValue(value: unknown): string | undefined {
