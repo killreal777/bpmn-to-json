@@ -1,0 +1,25 @@
+{
+  "name": "bpmn-optimized-reader",
+  "version": "0.1.0",
+  "description": "Read BPMN files through optimized compact JSON.",
+  "author": {
+    "name": "killreal777"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "BPMN Optimized Reader",
+    "shortDescription": "Convert BPMN to optimized JSON before analysis.",
+    "longDescription": "BPMN Optimized Reader bundles a deterministic BPMN XML to optimized JSON converter and instructions for decoding the compact BPMN representation.",
+    "developerName": "killreal777",
+    "category": "Productivity",
+    "capabilities": [
+      "BPMN analysis",
+      "Process graph reading",
+      "Compact JSON conversion"
+    ],
+    "defaultPrompt": [
+      "Convert this BPMN file to optimized JSON.",
+      "Analyze BPMN paths with the optimized reader."
+    ]
+  }
+}
