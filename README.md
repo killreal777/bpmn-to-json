@@ -25,9 +25,9 @@ The Base JSON projection keeps information that helps understand process structu
 
 The Optimized preset starts from Base JSON and applies typed optimizations:
 
-- element identity and selected execution flags such as `asyncBefore` are packed into a compact `meta` string;
+- element type, id, name, delegate/topic value, call target, and selected execution flags such as `external` and `asyncBefore` are packed into a compact `meta` string;
 - sequence flows are packed as `from,to,name,condition` strings;
-- call activity mappings use compact `in` and `out` arrays;
+- call activity mappings use compact `in` and `out` arrays; `sourceExpression` mappings are prefixed with `=`, and `variables="all"` is written as `*`;
 - redundant graph references and top-level metadata are omitted.
 
 ## What It Drops
@@ -141,9 +141,9 @@ Current example outputs:
 | Example | Source BPMN | Compact JSON | Ratio | Reduction |
 | --- | ---: | ---: | ---: | ---: |
 | `loan-application-process` / `base` | 4,855 bytes | 3,536 bytes | 1.37x | 27.2% |
-| `loan-application-process` / `optimized` | 4,855 bytes | 1,120 bytes | 4.33x | 76.9% |
+| `loan-application-process` / `optimized` | 4,855 bytes | 1,106 bytes | 4.39x | 77.2% |
 | `risk-check-process` / `base` | 2,872 bytes | 1,638 bytes | 1.75x | 43.0% |
-| `risk-check-process` / `optimized` | 2,872 bytes | 545 bytes | 5.27x | 81.0% |
+| `risk-check-process` / `optimized` | 2,872 bytes | 532 bytes | 5.40x | 81.5% |
 
 Recalculate metrics with:
 

@@ -3,10 +3,10 @@
     {
       "elements": [
         {
-          "meta": "Activity_0jo48pq,ServiceTask,Publish decision,impl=${publishDecisionDelegate},asyncBefore"
+          "meta": "ServiceTask,Activity_0jo48pq,Publish decision,publishDecisionDelegate,asyncBefore"
         },
         {
-          "meta": "CallRiskCheck,CallActivity,Run risk check,call=risk-check,asyncBefore",
+          "meta": "CallActivity,CallRiskCheck,Run risk check,risk-check,asyncBefore",
           "in": [
             "applicationId",
             "applicantName->clientId",
@@ -14,17 +14,17 @@
             "amount->loanAmount"
           ],
           "out": [
-            "riskScore"
+            "=riskScore->riskScore"
           ]
         },
         {
-          "meta": "EndLoanApplication,EndEvent"
+          "meta": "EndEvent,EndLoanApplication"
         },
         {
-          "meta": "SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate},asyncBefore"
+          "meta": "ServiceTask,SaveApplication,Save application,saveApplicationDelegate,asyncBefore"
         },
         {
-          "meta": "StartLoanApplication,StartEvent"
+          "meta": "StartEvent,StartLoanApplication"
         }
       ],
       "flows": [
@@ -35,7 +35,7 @@
       ],
       "id": "loan-application-process",
       "name": "Loan application process",
-      "type": "bpmn:Process"
+      "type": "Process"
     }
   ]
 }

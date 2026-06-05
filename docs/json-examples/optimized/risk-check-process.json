@@ -3,13 +3,13 @@
     {
       "elements": [
         {
-          "meta": "EndRiskCheck,EndEvent"
+          "meta": "EndEvent,EndRiskCheck"
         },
         {
-          "meta": "StartRiskCheck,StartEvent"
+          "meta": "StartEvent,StartRiskCheck"
         },
         {
-          "meta": "YetAnotherServiceTask,ServiceTask,Calculate risk,impl=${calculateRiskDelegate},asyncBefore"
+          "meta": "ServiceTask,YetAnotherServiceTask,Calculate risk,calculateRiskDelegate,asyncBefore"
         }
       ],
       "flows": [
@@ -18,7 +18,7 @@
       ],
       "id": "risk-check-process",
       "name": "Risk check process",
-      "type": "bpmn:Process"
+      "type": "Process"
     }
   ]
 }
