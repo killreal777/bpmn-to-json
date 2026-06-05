@@ -5,6 +5,7 @@ import { compactFlowsOptimization } from './compact-flows.js';
 import { OPTIMIZATION_IDS, type OptimizationId } from './ids.js';
 import { omitRedundantGraphRefsOptimization } from './omit-redundant-graph-refs.js';
 import { omitTopLevelMetadataOptimization } from './omit-top-level-metadata.js';
+import { stripNamespacePrefixesOptimization } from './strip-namespace-prefixes.js';
 import type { Optimization } from './types.js';
 
 export const OPTIMIZATION_REGISTRY: Record<OptimizationId, Optimization> = {
@@ -13,5 +14,6 @@ export const OPTIMIZATION_REGISTRY: Record<OptimizationId, Optimization> = {
   [OPTIMIZATION_IDS.compactFlows]: compactFlowsOptimization,
   [OPTIMIZATION_IDS.compactConditions]: compactConditionsOptimization,
   [OPTIMIZATION_IDS.omitRedundantGraphRefs]: omitRedundantGraphRefsOptimization,
-  [OPTIMIZATION_IDS.omitTopLevelMetadata]: omitTopLevelMetadataOptimization
+  [OPTIMIZATION_IDS.omitTopLevelMetadata]: omitTopLevelMetadataOptimization,
+  [OPTIMIZATION_IDS.stripNamespacePrefixes]: stripNamespacePrefixesOptimization
 };

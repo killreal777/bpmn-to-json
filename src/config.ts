@@ -39,7 +39,8 @@ export const BUILT_IN_PRESETS: Record<CompressionPresetName, CompressionConfig> 
         OPTIMIZATION_IDS.compactFlows,
         OPTIMIZATION_IDS.compactConditions,
         OPTIMIZATION_IDS.omitRedundantGraphRefs,
-        OPTIMIZATION_IDS.omitTopLevelMetadata
+        OPTIMIZATION_IDS.omitTopLevelMetadata,
+        OPTIMIZATION_IDS.stripNamespacePrefixes
       ]
     },
     output: {

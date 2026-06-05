@@ -20,7 +20,8 @@ describe('CLI compression config', () => {
       OPTIMIZATION_IDS.compactFlows,
       OPTIMIZATION_IDS.compactConditions,
       OPTIMIZATION_IDS.omitRedundantGraphRefs,
-      OPTIMIZATION_IDS.omitTopLevelMetadata
+      OPTIMIZATION_IDS.omitTopLevelMetadata,
+      OPTIMIZATION_IDS.stripNamespacePrefixes
     ]);
   });
 
@@ -44,6 +45,7 @@ describe('CLI compression config', () => {
     expect(json).not.toContain('targetRef');
     expect(json).not.toContain('calledElement');
     expect(json).not.toContain('camunda:asyncBefore');
+    expect(json).not.toMatch(/(?:camunda|camunca|bpmn):/i);
     expect(json).not.toContain('impl=');
     expect(json).toContain('"meta"');
     expect(json).toContain('saveApplicationDelegate');

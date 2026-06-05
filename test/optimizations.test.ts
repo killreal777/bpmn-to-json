@@ -11,7 +11,8 @@ describe('optimization pipeline', () => {
       compactFlows: 'compactFlows',
       compactConditions: 'compactConditions',
       omitRedundantGraphRefs: 'omitRedundantGraphRefs',
-      omitTopLevelMetadata: 'omitTopLevelMetadata'
+      omitTopLevelMetadata: 'omitTopLevelMetadata',
+      stripNamespacePrefixes: 'stripNamespacePrefixes'
     });
   });
 
@@ -206,6 +207,45 @@ describe('optimization pipeline', () => {
             }
           ],
           flows: ['StartEvent_1,Task_1']
+        }
+      ]
+    });
+  });
+
+  it('strips BPMN and Camunda namespace prefixes from final keys and values', () => {
+    const model = {
+      processes: [
+        {
+          type: 'BPMN:Process',
+          'Camunda:flag': 'camunda:value',
+          elements: [
+            {
+              meta: 'bpmn:ServiceTask,Task_1,Camunda:Do work',
+              execution: {
+                'camunca:legacy': 'Bpmn:LegacyValue'
+              }
+            }
+          ]
+        }
+      ]
+    };
+
+    const optimized = applyOptimizations(model, [OPTIMIZATION_IDS.stripNamespacePrefixes]);
+
+    expect(JSON.stringify(optimized)).not.toMatch(/(?:camunda|camunca|bpmn):/i);
+    expect(optimized).toEqual({
+      processes: [
+        {
+          type: 'Process',
+          flag: 'value',
+          elements: [
+            {
+              meta: 'ServiceTask,Task_1,Do work',
+              execution: {
+                legacy: 'LegacyValue'
+              }
+            }
+          ]
         }
       ]
     });
