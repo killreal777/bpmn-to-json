@@ -1,0 +1,6 @@
+{
+  "name": "bpmn-optimized-reader",
+  "version": "0.1.0",
+  "description": "Read BPMN files through optimized compact JSON.",
+  "skills": "skills"
+}

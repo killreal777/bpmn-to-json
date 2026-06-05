@@ -3,3 +3,5 @@ tmp/
 dist/
 .worktrees/
 skills/bpmn-optimized-reader/assets/bpmn-to-json/package*.json
+!plugins/bpmn-optimized-reader/skills/bpmn-optimized-reader/assets/bpmn-to-json/dist/
+!plugins/bpmn-optimized-reader/skills/bpmn-optimized-reader/assets/bpmn-to-json/dist/**

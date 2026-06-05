@@ -1,0 +1,4 @@
+interface:
+  display_name: "BPMN Optimized Reader"
+  short_description: "Read BPMN through optimized compact JSON."
+  default_prompt: "Convert this BPMN to optimized JSON and analyze the process using the compact format."

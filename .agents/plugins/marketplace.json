@@ -1,0 +1,20 @@
+{
+  "name": "bpmn-to-json",
+  "interface": {
+    "displayName": "BPMN to JSON"
+  },
+  "plugins": [
+    {
+      "name": "bpmn-optimized-reader",
+      "source": {
+        "source": "local",
+        "path": "./plugins/bpmn-optimized-reader"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
