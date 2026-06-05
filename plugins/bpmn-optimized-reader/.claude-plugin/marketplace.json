@@ -1,0 +1,16 @@
+{
+  "name": "bpmn-to-json",
+  "owner": {
+    "name": "killreal777"
+  },
+  "plugins": [
+    {
+      "name": "bpmn-optimized-reader",
+      "description": "Read BPMN files through optimized compact JSON.",
+      "source": {
+        "type": "local",
+        "path": "./"
+      }
+    }
+  ]
+}
