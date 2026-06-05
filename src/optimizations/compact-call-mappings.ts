@@ -57,8 +57,18 @@ function compactMapping(value: unknown): string | undefined {
     return undefined;
   }
 
-  const source = stringValue(value.source ?? value.sourceExpression);
+  const variables = stringValue(value.variables);
+  if (variables === 'all') {
+    return '*';
+  }
+
+  const source = stringValue(value.source);
+  const sourceExpression = stringValue(value.sourceExpression);
   const target = stringValue(value.target);
+
+  if (sourceExpression && target) {
+    return `=${sourceExpression}->${target}`;
+  }
 
   if (!source || !target) {
     return undefined;

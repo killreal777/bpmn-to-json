@@ -44,8 +44,9 @@ describe('CLI compression config', () => {
     expect(json).not.toContain('targetRef');
     expect(json).not.toContain('calledElement');
     expect(json).not.toContain('camunda:asyncBefore');
+    expect(json).not.toContain('impl=');
     expect(json).toContain('"meta"');
-    expect(json).toContain('impl=${saveApplicationDelegate}');
+    expect(json).toContain('saveApplicationDelegate');
     expect(json).toContain('asyncBefore');
   });
 

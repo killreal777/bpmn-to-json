@@ -103,27 +103,33 @@ describe('convertBpmnToJson', () => {
     const result = await convertBpmnToJson(xml, { preset: 'optimized' });
     const serialized = JSON.stringify(result);
     const [process] = result.processes as Array<{
+      type?: string;
       elements: Array<Record<string, unknown>>;
     }>;
 
     expect(result).not.toHaveProperty('definitions');
     expect(result).not.toHaveProperty('collaborations');
+    expect(process.type).toBe('Process');
     expect(process.elements).toContainEqual({
-      meta: 'SaveApplication,ServiceTask,Save application,impl=${saveApplicationDelegate},asyncBefore'
+      meta: 'ServiceTask,SaveApplication,Save application,saveApplicationDelegate,asyncBefore'
     });
     expect(process.elements).toContainEqual({
-      meta: 'CallRiskCheck,CallActivity,Run risk check,call=risk-check,asyncBefore',
+      meta: 'CallActivity,CallRiskCheck,Run risk check,risk-check,asyncBefore',
       in: ['applicationId', 'applicantName->clientId', 'clientId->applicantName', 'amount->loanAmount'],
-      out: ['riskScore']
+      out: ['=riskScore->riskScore']
     });
     expect(serialized).not.toContain('"type":"bpmn:ServiceTask"');
     expect(serialized).not.toContain('"type":"bpmn:CallActivity"');
+    expect(serialized).not.toContain('"type":"bpmn:Process"');
     expect(serialized).not.toContain('"id":"SaveApplication"');
     expect(serialized).not.toContain('"type":"ServiceTask"');
     expect(serialized).not.toContain('"name":"Save application"');
     expect(serialized).not.toContain('"calledElement"');
     expect(serialized).not.toContain('"impl"');
     expect(serialized).not.toContain('"call"');
+    expect(serialized).not.toContain('${saveApplicationDelegate}');
+    expect(serialized).not.toContain('impl=');
+    expect(serialized).not.toContain('call=');
     expect(serialized).not.toContain('"extensions"');
     expect(serialized).not.toContain('camunda:In');
     expect(serialized).not.toContain('camunda:Out');
