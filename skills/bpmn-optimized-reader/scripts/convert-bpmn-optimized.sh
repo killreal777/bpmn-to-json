@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 SKILL_DIR="$(cd "${SCRIPT_DIR}/.." && pwd -P)"
 CONVERTER_DIR="${SKILL_DIR}/assets/bpmn-to-json"
 REPO_ROOT="$(cd "${SKILL_DIR}/../.." && pwd -P)"
+PACKAGED_CONVERTER_DIR="${REPO_ROOT}/plugins/bpmn-optimized-reader/skills/bpmn-optimized-reader/assets/bpmn-to-json"
 
 usage() {
   cat <<'EOF'
@@ -39,6 +40,10 @@ if [[ -z "${OUTPUT}" ]]; then
   echo "Missing required -o/--output" >&2
   usage >&2
   exit 1
+fi
+
+if [[ ! -f "${CONVERTER_DIR}/dist/cli.js" && -f "${PACKAGED_CONVERTER_DIR}/dist/cli.js" ]]; then
+  CONVERTER_DIR="${PACKAGED_CONVERTER_DIR}"
 fi
 
 if [[ ! -f "${CONVERTER_DIR}/dist/cli.js" ]]; then
