@@ -134,6 +134,7 @@ describe('convertBpmnToJson', () => {
     expect(serialized).not.toContain('camunda:In');
     expect(serialized).not.toContain('camunda:Out');
     expect(serialized).not.toContain('camunda:asyncBefore');
+    expect(serialized).not.toMatch(/(?:camunda|camunca|bpmn):/i);
     expect(serialized).not.toContain('"incoming"');
     expect(serialized).not.toContain('"outgoing"');
   });

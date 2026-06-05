@@ -4,7 +4,8 @@ export const OPTIMIZATION_IDS = {
   compactFlows: 'compactFlows',
   compactConditions: 'compactConditions',
   omitRedundantGraphRefs: 'omitRedundantGraphRefs',
-  omitTopLevelMetadata: 'omitTopLevelMetadata'
+  omitTopLevelMetadata: 'omitTopLevelMetadata',
+  stripNamespacePrefixes: 'stripNamespacePrefixes'
 } as const;
 
 export type OptimizationId = typeof OPTIMIZATION_IDS[keyof typeof OPTIMIZATION_IDS];

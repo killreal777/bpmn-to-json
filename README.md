@@ -29,6 +29,7 @@ The Optimized preset starts from Base JSON and applies typed optimizations:
 - sequence flows are packed as `from,to,name,condition` strings;
 - call activity mappings use compact `in` and `out` arrays; `sourceExpression` mappings are prefixed with `=`, and `variables="all"` is written as `*`;
 - redundant graph references and top-level metadata are omitted.
+- final Optimized output strips `camunda:`, `camunca:`, and `bpmn:` prefixes case-insensitively.
 
 ## What It Drops
 

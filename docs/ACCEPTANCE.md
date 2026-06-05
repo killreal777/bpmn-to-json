@@ -52,7 +52,7 @@ docs/bpmn-examples/risk-check-process.bpmn -> docs/json-examples/optimized/risk-
 
 По Base JSON можно понять основную структуру процесса: процессы, элементы, события, задачи, gateway, incoming/outgoing и sequence flows с `sourceRef`/`targetRef`.
 
-Optimized JSON сохраняет ту же смысловую нагрузку, но сжимает повторяющиеся ключи: элементы используют `meta` в порядке `type,id,name,...`, включая delegate/topic value, call target, `external` и `asyncBefore`; sequence flows записаны строками; call activity mappings записаны через `in` и `out`.
+Optimized JSON сохраняет ту же смысловую нагрузку, но сжимает повторяющиеся ключи: элементы используют `meta` в порядке `type,id,name,...`, включая delegate/topic value, call target, `external` и `asyncBefore`; sequence flows записаны строками; call activity mappings записаны через `in` и `out`; финальный проход убирает `camunda:`, `camunca:` и `bpmn:` без учета регистра.
 
 ## Техническая реализация
 
