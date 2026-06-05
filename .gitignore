@@ -2,3 +2,4 @@ node_modules/
 tmp/
 dist/
 .worktrees/
+skills/bpmn-optimized-reader/assets/bpmn-to-json/package*.json

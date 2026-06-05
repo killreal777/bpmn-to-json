@@ -1,6 +1,6 @@
 ---
 name: bpmn-optimized-reader
-description: Use when Codex needs to inspect, understand, summarize, validate, or reason about BPMN files or BPMN XML. Convert BPMN to the bundled optimized JSON format first, then analyze the compact representation. Also use when evaluating whether optimized BPMN reading improves agent performance.
+description: Use when an agent needs to inspect, understand, summarize, validate, or reason about BPMN files or BPMN XML. Convert BPMN to the bundled optimized JSON format first, then analyze the compact representation. Also use when evaluating whether optimized BPMN reading improves agent performance.
 ---
 
 # BPMN Optimized Reader
@@ -19,7 +19,7 @@ bash skills/bpmn-optimized-reader/scripts/convert-bpmn-optimized.sh path/to/file
 3. Decode compact fields using `references/optimized-format.md`.
 4. Answer from the converted JSON and mention the generated JSON path when useful.
 
-The converter is local and deterministic. It does not call an LLM or network during conversion. If the compiled converter is missing, wrappers run `npm run build:skill` from the repository root. On first use in a fresh environment, wrappers may run `npm ci --omit=dev` inside the skill asset directory to install Node dependencies from the bundled lockfile.
+The converter is local and deterministic. It does not call an LLM or network during conversion. If the compiled converter is missing and the full plugin repository is available, wrappers run `npm run build:skill` from the repository root. On first use in a fresh environment, wrappers may run `npm ci --omit=dev` inside the skill asset directory to install Node dependencies from the bundled lockfile.
 
 ## Bundled Converter
 
@@ -39,20 +39,7 @@ bash scripts/convert-bpmn-optimized.sh input.bpmn -o output.optimized.json
 bash scripts/bpmn-metrics.sh input.bpmn
 ```
 
-Resolve script paths relative to this skill directory. If running outside this directory, use the absolute paths under `/home/killreal777/.codex/skills/bpmn-optimized-reader/scripts/`.
-
-For local Codex installation, the recommended setup is a symlink from this repository-managed skill:
-
-```bash
-npm run build:skill
-npm run link:skill
-```
-
-If a local skill already exists, replace it intentionally:
-
-```bash
-npm run link:skill -- --replace
-```
+Resolve script paths relative to this skill directory. When installed as a Codex plugin, Claude Code plugin, or Qwen Code extension from this repository, the plugin root is the repository root and wrappers can build the bundled converter with `npm run build:skill` when needed.
 
 ## Reading Guidance
 

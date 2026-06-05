@@ -8,8 +8,7 @@
     "typecheck": "tsc --noEmit",
     "convert": "tsx src/cli.ts",
     "metrics": "tsx src/metrics.ts",
-    "build:skill": "node scripts/build-bpmn-skill.mjs",
-    "link:skill": "node scripts/link-bpmn-skill.mjs"
+    "build:skill": "node scripts/build-bpmn-skill.mjs"
   },
   "dependencies": {
     "bpmn-moddle": "^9.0.4",

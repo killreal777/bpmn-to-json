@@ -56,7 +56,6 @@ Keep information that explains process flow or execution behavior:
 - sequence flows;
 - incoming and outgoing flow ids;
 - gateway conditions;
-- documentation;
 - event definitions when present;
 - execution-related Camunda attributes;
 - call activity `calledElement`;
@@ -73,7 +72,7 @@ Exclude:
 - `isExecutable`;
 - `camunda:historyTimeToLive`.
 
-Compression backlog decision: omit `camunda:asyncBefore`, `camunda:asyncAfter`, and `camunda:exclusive` from compact JSON.
+Compression decision: preserve explicit async/exclusive execution attributes in Base JSON. In Optimized JSON, pack `camunda:asyncBefore="true"` into element `meta` as `asyncBefore`; do not require Camunda/BPMN namespace prefixes in optimized output.
 
 Represent simple extension mappings compactly:
 
@@ -109,10 +108,10 @@ npm run typecheck
 For converter behavior, also run:
 
 ```bash
-npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json --preset max
-npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-2.json --preset max
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-1.json --preset optimized
+npx tsx src/cli.ts docs/bpmn-examples/loan-application-process.bpmn -o tmp/loan-2.json --preset optimized
 diff tmp/loan-1.json tmp/loan-2.json
-rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|width|height|targetNamespace|isExecutable|historyTimeToLive|asyncBefore|asyncAfter|exclusive" tmp/*.json
+rg "BPMNDiagram|BPMNPlane|BPMNShape|BPMNEdge|Bounds|waypoint|bpmndi|dc:|di:|width|height|targetNamespace|isExecutable|historyTimeToLive|camunda:|bpmn:|Camunda:|Bpmn:|BPMN:" tmp/loan-1.json tmp/loan-2.json
 ```
 
 The `rg` command should find no matches.
@@ -126,4 +125,4 @@ README and acceptance reports should include compression metrics for committed e
 - ratio as `source / json`;
 - reduction as `1 - json / source`.
 
-When JSON examples are regenerated, update the metric tables in `README.md` and `docs/ACCEPTANCE.md` for both `base` and `max`.
+When JSON examples are regenerated, update the metric tables in `README.md` and `docs/ACCEPTANCE.md` for both `base` and `optimized`.
