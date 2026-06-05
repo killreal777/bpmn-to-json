@@ -19,7 +19,7 @@ bash skills/bpmn-optimized-reader/scripts/convert-bpmn-optimized.sh path/to/file
 3. Decode compact fields using `references/optimized-format.md`.
 4. Answer from the converted JSON and mention the generated JSON path when useful.
 
-The converter is local and deterministic. It does not call an LLM or network during conversion. If the compiled converter is missing and the full plugin repository is available, wrappers run `npm run build:skill` from the repository root. On first use in a fresh environment, wrappers may run `npm ci --omit=dev` inside the skill asset directory to install Node dependencies from the bundled lockfile.
+The converter is local and deterministic. It does not call an LLM during conversion. When installed from this repository as a Qwen Code extension, wrappers use the compiled converter bundled under `plugins/bpmn-optimized-reader`. If that bundle is missing in a development checkout, wrappers can run `npm run build:skill` from the repository root. On first use in a fresh environment, wrappers may run `npm ci --omit=dev` inside the converter asset directory to install Node dependencies from the bundled lockfile.
 
 ## Bundled Converter
 
@@ -39,7 +39,7 @@ bash scripts/convert-bpmn-optimized.sh input.bpmn -o output.optimized.json
 bash scripts/bpmn-metrics.sh input.bpmn
 ```
 
-Resolve script paths relative to this skill directory. When installed as a Codex plugin, Claude Code plugin, or Qwen Code extension from this repository, the plugin root is the repository root and wrappers can build the bundled converter with `npm run build:skill` when needed.
+Resolve script paths relative to this skill directory. For Qwen Code, the repository root is the native extension root because `qwen-extension.json` points directly at `skills/`.
 
 ## Reading Guidance
 

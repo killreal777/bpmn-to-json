@@ -7,10 +7,7 @@
     {
       "name": "bpmn-optimized-reader",
       "description": "Read BPMN files through optimized compact JSON.",
-      "source": {
-        "type": "local",
-        "path": "./plugins/bpmn-optimized-reader"
-      }
+      "source": "./plugins/bpmn-optimized-reader"
     }
   ]
 }
