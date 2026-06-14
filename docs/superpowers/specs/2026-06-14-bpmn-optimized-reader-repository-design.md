@@ -113,5 +113,33 @@ validator and run the smoke test from the new repository root.
 
 Create `C:\Users\killr\ubuntu\projects\bpmn-optimized-reader` as an independent
 Git repository. Its initial commit contains only extension files and embedded
-runtime assets. The existing `bpmn-to-json` repository remains unchanged apart
-from this design record.
+runtime assets.
+
+After the standalone repository passes validation, remove all plugin and skill
+packaging from `bpmn-to-json`:
+
+```text
+.codex-plugin/
+.claude-plugin/
+plugins/
+skills/
+qwen-extension.json
+scripts/build-bpmn-skill.mjs
+```
+
+Also remove the `build:skill` script from `package.json` and refresh
+`package-lock.json` if npm changes its root package metadata.
+
+Do not remove converter functionality or converter documentation. In
+particular, keep:
+
+- `src/`, including optimized projection code;
+- `test/`;
+- `docs/bpmn-examples/`;
+- `docs/json-examples/`;
+- compression and optimized-preset documentation;
+- converter scripts unrelated to plugin packaging.
+
+The cleanup happens only after the new repository contains and successfully
+tests the migrated extension, so there is always one working copy during the
+transition.
