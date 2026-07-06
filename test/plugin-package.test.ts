@@ -6,11 +6,37 @@ import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 
 const execFileAsync = promisify(execFile);
+const rootSkill = 'skills/bpmn-optimized-reader';
+const rootConverterAsset = `${rootSkill}/assets/bpmn-to-json`;
 const packageRoot = 'plugins/bpmn-optimized-reader';
 const packagedSkill = `${packageRoot}/skills/bpmn-optimized-reader`;
 const converterAsset = `${packagedSkill}/assets/bpmn-to-json`;
 
 describe('installable agent package', () => {
+  it('is self-contained for Qwen Code and Claude Code installation from the repository root', async () => {
+    const qwenExtension = JSON.parse(await readFile('qwen-extension.json', 'utf8')) as {
+      name: string;
+      skills: string;
+    };
+    const claudePlugin = JSON.parse(await readFile('.claude-plugin/plugin.json', 'utf8')) as {
+      name: string;
+      skills: string;
+    };
+
+    expect(qwenExtension).toMatchObject({
+      name: 'bpmn-optimized-reader',
+      skills: 'skills'
+    });
+    expect(claudePlugin).toMatchObject({
+      name: 'bpmn-optimized-reader',
+      skills: './skills/'
+    });
+    await expect(readFile(`${rootSkill}/SKILL.md`, 'utf8')).resolves.toContain('BPMN Optimized Reader');
+    await expect(readFile(`${rootConverterAsset}/dist/cli.js`, 'utf8')).resolves.toContain('preset');
+    await expect(readFile(`${rootConverterAsset}/dist/metrics.js`, 'utf8')).resolves.toContain('formatMetricsReport');
+    await expect(readFile(`${rootConverterAsset}/package-lock.json`, 'utf8')).resolves.toContain('bpmn-moddle');
+  });
+
   it('declares the plugin package as the marketplace install target', async () => {
     const marketplace = JSON.parse(await readFile('.agents/plugins/marketplace.json', 'utf8')) as {
       plugins: Array<{
@@ -80,11 +106,19 @@ describe('installable agent package', () => {
     expect(json).not.toContain('BPMNDiagram');
   });
 
-  it('documents subdirectory installation as the supported remote install path', async () => {
+  it('documents repository-root installation as the supported Qwen Code install path', async () => {
+    const readme = await readFile('README.md', 'utf8');
+
+    expect(readme).toContain('/extensions install');
+    expect(readme).toContain('https://github.com/killreal777/bpmn-to-json');
+    expect(readme).not.toContain('/tree/main/plugins/bpmn-optimized-reader');
+  });
+
+  it('documents repository-root installation as the supported plugin package path', async () => {
     const readme = await readFile(`${packageRoot}/README.md`, 'utf8');
 
-    expect(readme).toContain('plugins/bpmn-optimized-reader');
-    expect(readme).toContain('/extensions install');
+    expect(readme).toContain('https://github.com/killreal777/bpmn-to-json');
     expect(readme).toContain('/plugins');
+    expect(readme).not.toContain('/tree/main/plugins/bpmn-optimized-reader');
   });
 });

@@ -2,13 +2,19 @@
 
 Installable agent package for reading BPMN files through optimized compact JSON.
 
-This directory is the canonical install root:
+The canonical remote install target is the repository root:
+
+```text
+https://github.com/killreal777/bpmn-to-json
+```
+
+This directory is a synchronized plugin package copy for marketplace-style plugin installs:
 
 ```text
 plugins/bpmn-optimized-reader
 ```
 
-It contains:
+It contains the same runtime skill assets:
 
 - `qwen-extension.json` for Qwen Code `/extensions install`;
 - `.claude-plugin/plugin.json` for Claude Code `/plugins`;
@@ -17,27 +23,27 @@ It contains:
 
 ## Qwen Code
 
-From Qwen Code, install this package by using the GitHub URL for this subdirectory:
+From Qwen Code, install the repository root:
 
 ```text
-/extensions install https://github.com/killreal777/bpmn-to-json/tree/main/plugins/bpmn-optimized-reader
+/extensions install https://github.com/killreal777/bpmn-to-json
 ```
 
 Equivalent CLI form:
 
 ```bash
-qwen extensions install https://github.com/killreal777/bpmn-to-json/tree/main/plugins/bpmn-optimized-reader
+qwen extensions install killreal777/bpmn-to-json
 ```
 
 ## Claude Code
 
-From Claude Code `/plugins`, install the plugin from this same subdirectory URL:
+From Claude Code `/plugins`, install the plugin from the repository root:
 
 ```text
-https://github.com/killreal777/bpmn-to-json/tree/main/plugins/bpmn-optimized-reader
+https://github.com/killreal777/bpmn-to-json
 ```
 
-If your Claude Code UI installs from a repository marketplace instead, add this repository as the marketplace and choose `bpmn-optimized-reader`; the marketplace entry points to `./plugins/bpmn-optimized-reader`.
+If your Claude Code UI installs from a repository marketplace instead, add this repository as the marketplace and choose `bpmn-optimized-reader`; the marketplace entry points to this synchronized copy.
 
 ## First Use
 

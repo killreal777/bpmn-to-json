@@ -56,27 +56,33 @@ npm install
 
 ## Agent Skill Installation
 
-The primary agent-facing package is:
+The primary agent-facing package is the repository root:
 
 ```text
-plugins/bpmn-optimized-reader
+https://github.com/killreal777/bpmn-to-json
 ```
 
-Use that subdirectory as the install target. It contains the Qwen Code extension manifest, the Claude Code plugin manifest, the skill, and the bundled compiled converter.
+It contains the Qwen Code extension manifest, the Claude Code plugin manifest, the skill, and the bundled compiled converter.
 
 Qwen Code:
 
 ```text
-/extensions install https://github.com/killreal777/bpmn-to-json/tree/main/plugins/bpmn-optimized-reader
+/extensions install https://github.com/killreal777/bpmn-to-json
+```
+
+Equivalent CLI form:
+
+```bash
+qwen extensions install killreal777/bpmn-to-json
 ```
 
 Claude Code:
 
 ```text
-/plugins -> install from https://github.com/killreal777/bpmn-to-json/tree/main/plugins/bpmn-optimized-reader
+/plugins -> install from https://github.com/killreal777/bpmn-to-json
 ```
 
-If Claude Code installs from a marketplace repository instead of a direct plugin URL, add this repository as the marketplace and install `bpmn-optimized-reader`; `.agents/plugins/marketplace.json` points to `./plugins/bpmn-optimized-reader`.
+For Claude Code marketplace-style installs, this repository also includes `.agents/plugins/marketplace.json`, which points to the synchronized plugin copy at `./plugins/bpmn-optimized-reader`.
 
 Refresh the installable package after converter or skill changes:
 
