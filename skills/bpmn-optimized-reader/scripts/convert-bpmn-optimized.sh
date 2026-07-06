@@ -47,7 +47,12 @@ if [[ ! -f "${CONVERTER_DIR}/dist/cli.js" && -f "${PACKAGED_CONVERTER_DIR}/dist/
 fi
 
 if [[ ! -f "${CONVERTER_DIR}/dist/cli.js" ]]; then
-  (cd "${REPO_ROOT}" && npm run build:skill)
+  if [[ -f "${REPO_ROOT}/package.json" ]] && grep -q '"build:skill"' "${REPO_ROOT}/package.json"; then
+    (cd "${REPO_ROOT}" && npm run build:skill)
+  else
+    echo "Bundled converter is missing: ${CONVERTER_DIR}/dist/cli.js" >&2
+    exit 1
+  fi
 fi
 
 if [[ ! -d "${CONVERTER_DIR}/node_modules/bpmn-moddle" ]]; then

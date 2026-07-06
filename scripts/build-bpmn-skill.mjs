@@ -4,9 +4,15 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const skillConverterDir = resolve(repoRoot, 'skills/bpmn-optimized-reader/assets/bpmn-to-json');
+const sourceSkillDir = resolve(repoRoot, 'skills/bpmn-optimized-reader');
+const pluginRoot = resolve(repoRoot, 'plugins/bpmn-optimized-reader');
+const packagedSkillDir = resolve(pluginRoot, 'skills/bpmn-optimized-reader');
+const skillConverterDir = resolve(packagedSkillDir, 'assets/bpmn-to-json');
 const distDir = resolve(skillConverterDir, 'dist');
 
+await rm(packagedSkillDir, { recursive: true, force: true });
+await mkdir(dirname(packagedSkillDir), { recursive: true });
+await cp(sourceSkillDir, packagedSkillDir, { recursive: true });
 await mkdir(skillConverterDir, { recursive: true });
 await rm(distDir, { recursive: true, force: true });
 
@@ -40,7 +46,7 @@ execFileSync('npx', [
 await cp(resolve(repoRoot, 'package.json'), resolve(skillConverterDir, 'package.json'));
 await cp(resolve(repoRoot, 'package-lock.json'), resolve(skillConverterDir, 'package-lock.json'));
 
-console.log(`Built BPMN optimized reader converter into ${skillConverterDir}`);
+console.log(`Built BPMN optimized reader package into ${pluginRoot}`);
 
 async function tsFiles(dir) {
   const entries = await readdir(dir, { withFileTypes: true });

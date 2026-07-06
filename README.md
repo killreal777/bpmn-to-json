@@ -54,6 +54,36 @@ The converter does not serialize the full BPMN moddle object model. It intention
 npm install
 ```
 
+## Agent Skill Installation
+
+The primary agent-facing package is:
+
+```text
+plugins/bpmn-optimized-reader
+```
+
+Use that subdirectory as the install target. It contains the Qwen Code extension manifest, the Claude Code plugin manifest, the skill, and the bundled compiled converter.
+
+Qwen Code:
+
+```text
+/extensions install https://github.com/killreal777/bpmn-to-json/tree/main/plugins/bpmn-optimized-reader
+```
+
+Claude Code:
+
+```text
+/plugins -> install from https://github.com/killreal777/bpmn-to-json/tree/main/plugins/bpmn-optimized-reader
+```
+
+If Claude Code installs from a marketplace repository instead of a direct plugin URL, add this repository as the marketplace and install `bpmn-optimized-reader`; `.agents/plugins/marketplace.json` points to `./plugins/bpmn-optimized-reader`.
+
+Refresh the installable package after converter or skill changes:
+
+```bash
+npm run build:skill
+```
+
 ## Usage
 
 Run the CLI directly with `tsx`:
