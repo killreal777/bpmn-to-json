@@ -3,10 +3,7 @@ tmp/
 dist/
 .worktrees/
 skills/bpmn-optimized-reader/assets/bpmn-to-json/node_modules/
-plugins/bpmn-optimized-reader/skills/bpmn-optimized-reader/assets/bpmn-to-json/node_modules/
 !skills/bpmn-optimized-reader/assets/bpmn-to-json/package.json
 !skills/bpmn-optimized-reader/assets/bpmn-to-json/package-lock.json
 !skills/bpmn-optimized-reader/assets/bpmn-to-json/dist/
 !skills/bpmn-optimized-reader/assets/bpmn-to-json/dist/**
-!plugins/bpmn-optimized-reader/skills/bpmn-optimized-reader/assets/bpmn-to-json/dist/
-!plugins/bpmn-optimized-reader/skills/bpmn-optimized-reader/assets/bpmn-to-json/dist/**

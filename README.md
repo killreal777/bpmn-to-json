@@ -62,7 +62,7 @@ The primary agent-facing package is the repository root:
 https://github.com/killreal777/bpmn-to-json
 ```
 
-It contains the Qwen Code extension manifest, the Claude Code plugin and marketplace manifests, the skill, and the bundled compiled converter.
+It contains the Claude Code plugin and marketplace manifests, the skill, and the bundled compiled converter. Qwen Code installs it through its Claude marketplace plugin compatibility path.
 
 Qwen Code:
 
