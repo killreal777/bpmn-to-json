@@ -23,16 +23,16 @@ It contains the same runtime skill assets:
 
 ## Qwen Code
 
-From Qwen Code, install the repository root:
+From Qwen Code, install the repository root as a Claude marketplace plugin:
 
 ```text
-/extensions install https://github.com/killreal777/bpmn-to-json
+/extensions install killreal777/bpmn-to-json:bpmn-optimized-reader
 ```
 
 Equivalent CLI form:
 
 ```bash
-qwen extensions install killreal777/bpmn-to-json
+qwen extensions install killreal777/bpmn-to-json:bpmn-optimized-reader
 ```
 
 ## Claude Code

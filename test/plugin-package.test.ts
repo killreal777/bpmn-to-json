@@ -61,6 +61,30 @@ describe('installable agent package', () => {
     });
   });
 
+  it('declares a root Claude marketplace plugin for Qwen marketplace-style installs', async () => {
+    const marketplace = JSON.parse(await readFile('.claude-plugin/marketplace.json', 'utf8')) as {
+      name: string;
+      owner: { name: string };
+      plugins: Array<{
+        name: string;
+        description: string;
+        source: string;
+      }>;
+    };
+
+    expect(marketplace).toMatchObject({
+      name: 'bpmn-to-json',
+      owner: {
+        name: 'killreal777'
+      }
+    });
+    expect(marketplace.plugins).toContainEqual({
+      name: 'bpmn-optimized-reader',
+      description: 'Read BPMN files through optimized compact JSON.',
+      source: './'
+    });
+  });
+
   it('is self-contained for Qwen Code and Claude Code installation from the plugin directory', async () => {
     const qwenExtension = JSON.parse(await readFile(`${packageRoot}/qwen-extension.json`, 'utf8')) as {
       name: string;
@@ -110,7 +134,7 @@ describe('installable agent package', () => {
     const readme = await readFile('README.md', 'utf8');
 
     expect(readme).toContain('/extensions install');
-    expect(readme).toContain('https://github.com/killreal777/bpmn-to-json');
+    expect(readme).toContain('killreal777/bpmn-to-json:bpmn-optimized-reader');
     expect(readme).not.toContain('/tree/main/plugins/bpmn-optimized-reader');
   });
 

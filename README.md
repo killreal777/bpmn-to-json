@@ -62,18 +62,18 @@ The primary agent-facing package is the repository root:
 https://github.com/killreal777/bpmn-to-json
 ```
 
-It contains the Qwen Code extension manifest, the Claude Code plugin manifest, the skill, and the bundled compiled converter.
+It contains the Qwen Code extension manifest, the Claude Code plugin and marketplace manifests, the skill, and the bundled compiled converter.
 
 Qwen Code:
 
 ```text
-/extensions install https://github.com/killreal777/bpmn-to-json
+/extensions install killreal777/bpmn-to-json:bpmn-optimized-reader
 ```
 
 Equivalent CLI form:
 
 ```bash
-qwen extensions install killreal777/bpmn-to-json
+qwen extensions install killreal777/bpmn-to-json:bpmn-optimized-reader
 ```
 
 Claude Code:
@@ -82,7 +82,7 @@ Claude Code:
 /plugins -> install from https://github.com/killreal777/bpmn-to-json
 ```
 
-For Claude Code marketplace-style installs, this repository also includes `.agents/plugins/marketplace.json`, which points to the synchronized plugin copy at `./plugins/bpmn-optimized-reader`.
+For marketplace-style installs, this repository includes `.claude-plugin/marketplace.json`, which exposes `bpmn-optimized-reader` from the repository root.
 
 Refresh the installable package after converter or skill changes:
 
